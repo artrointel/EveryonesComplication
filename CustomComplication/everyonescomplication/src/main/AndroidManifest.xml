@@ -13,6 +13,31 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
 
+        <service android:name=".test.CounterComplicationService"
+            android:icon="@mipmap/ic_launcher"
+            android:label="ZTEST"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
+            <intent-filter>
+                <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST"/>
+            </intent-filter>
+
+
+            <!-- DECL. OF COMPLICATION DATA TYPE.
+            See ComplicationType class for the support. -->
+            <meta-data
+                android:name="android.support.wearable.complications.SUPPORTED_TYPES"
+                android:value="LONG_TEXT, SHORT_TEXT"/>
+
+            <!-- The number of seconds of complication update request. 0 means never update by the time. -->
+            <!-- SYNCHROUNOUS_UPDATE_PERIOD_MILLISECONDS also exists. refer to original android document. -->
+            <meta-data
+                android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
+                android:value="0"/>
+        </service>
+        <receiver android:name=".test.CounterComplicationBroadcast"/>
+
+
         <service android:name=".textlinecomplication.TextLineComplicationService"
             android:icon="@mipmap/ic_launcher"
             android:label="Long Text Complication"

@@ -1,15 +1,16 @@
-package com.artrointel.everyonescomplication.textlinecomplication
+package com.artrointel.everyonescomplication.backgroundcomplication
 
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.artrointel.customcomplication.boundary.Payload
+import com.artrointel.everyonescomplication.textlinecomplication.TextLinePayload
 
-class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payload) {
+class ImageComplicationPayload(context: Context, payload: Bundle) : Payload(context, payload)  {
     companion object {
         private val TAG = this.javaClass.simpleName
-        private val PKG_PREFIX: String = "com.artrointel.everyonescomplication.textlinecomplication."
-        val ACTION_TEXTLINE_COMPLICATION = PKG_PREFIX + "action"
+        private val PKG_PREFIX: String = "com.artrointel.everyonescomplication.imagecomplication."
+        val ACTION_IMAGE_COMPLICATION = PKG_PREFIX + "action"
     }
 
     enum class Command {
@@ -22,7 +23,7 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
             val SIZE = PKG_PREFIX + "SIZE"
             val CURRENT = PKG_PREFIX + "CURRENT"
             val INTERVAL = PKG_PREFIX + "INTERVAL" // TODO in hour?
-            val TEXTLINE = PKG_PREFIX + "TEXTLINE"
+            val IMAGE = PKG_PREFIX + "IMAGE"
         }
     }
 
@@ -31,13 +32,13 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
 
         when(extras.getString(Extra.COMMAND)) {
             Command.NEXT.name -> {
-                Log.d(TAG, "Show next text")
+                Log.d(TAG, "Show Next Image")
                 setNext()
                 needComplicationUpdated = true
             }
             Command.SET.name -> {
-                Log.d(TAG, "Set text data")
-                setTextLines()
+                Log.d(TAG, "Set Image data")
+                setImages()
                 needComplicationUpdated = true
             }
             else -> {
@@ -49,9 +50,9 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
         return needComplicationUpdated
     }
 
-    fun getCurrentTextLine() : String {
+    fun getCurrentImageBase64() : String {
         var idx = accessor.reader().getInt(Key.CURRENT, 0)
-        return accessor.reader().getString(Key.TEXTLINE + idx.toString(), "")!!
+        return accessor.reader().getString(Key.IMAGE + idx.toString(), "")!!
     }
 
     fun getInterval() : Int {
@@ -63,20 +64,16 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
         var size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
-        Log.d(TAG, "SHOW:"+accessor.reader().getString(Key.TEXTLINE + idx, "err")) // TODO dbg
     }
 
-    private fun setTextLines() {
+    private fun setImages() {
         accessor.writer().clear()
 
         var size = extras.getInt(Key.SIZE, 0)
         for(i: Int in 0 until size) {
-            var textLine = extras.getString(Key.TEXTLINE + i.toString())
-            accessor.writer().putString(Key.TEXTLINE + i.toString(), textLine)
-            Log.d(TAG, "Wrote text : " + textLine);
+            var textLine = extras.getString(Key.IMAGE + i.toString())
+            accessor.writer().putString(Key.IMAGE + i.toString(), textLine)
         }
-
-        accessor.writer().putInt(Key.SIZE, size);
 
         var interval = extras.getInt(Key.INTERVAL, 0)
         accessor.writer().putInt(Key.INTERVAL, interval)
