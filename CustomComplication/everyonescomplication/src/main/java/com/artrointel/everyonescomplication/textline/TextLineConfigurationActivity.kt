@@ -62,7 +62,7 @@ class TextLineConfigurationActivity : Activity() {
     }
 
     private fun applyChanges() {
-        intent = TextLinePayload.createIntentForBroadcastAction(TextLinePayload.Command.SET_DATA.name)
+        intent = TextLinePayload.createIntentForBroadcastAction(this, TextLinePayload.Command.SET_DATA.name)
         val size = configurationsBinding.textContainer.childCount
         for (i in 0 until size) {
             val item = configurationsBinding.textContainer.getChildAt(i) as LinearLayout

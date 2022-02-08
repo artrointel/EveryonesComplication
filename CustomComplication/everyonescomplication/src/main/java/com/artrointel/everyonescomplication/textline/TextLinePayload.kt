@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import com.artrointel.customcomplication.boundary.Payload
 
@@ -22,9 +23,10 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
             return TextLinePayload(context, payload)
         }
 
-        fun createIntentForBroadcastAction(command: String) : Intent {
+        fun createIntentForBroadcastAction(context: Context, command: String) : Intent {
             val intent = Intent()
             intent.action = ACTION_TEXT_LINE_COMPLICATION
+            intent.putExtra(Extra.DATA_SOURCE,  ComponentName(context, TextLineComplicationService::class.java))
             intent.putExtra(Extra.COMMAND, command)
             return intent
         }

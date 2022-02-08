@@ -17,9 +17,15 @@ class TextLineComplicationBroadcast : BroadcastReceiver() {
         }
         Log.d(TAG, "onReceived from complicationId(${payload!!.complicationId})")
 
-        if(payload?.handleByCommand() == true && payload!!.complicationId != -1) {
+        if(payload?.handleByCommand() == true) {
             val requester = ComplicationDataSourceUpdateRequester.Companion.create(context!!, payload!!.dataSource!!)
-            requester.requestUpdate(payload!!.complicationId)
+            if(payload!!.complicationId != -1) {
+                requester.requestUpdate(payload!!.complicationId)
+            }
+            else {
+                requester.requestUpdateAll()
+            }
+
             Log.d(TAG, "complicationId(${payload!!.complicationId}) update requested")
         }
     }
