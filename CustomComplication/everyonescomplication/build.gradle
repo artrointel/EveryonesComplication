@@ -40,6 +40,13 @@ dependencies {
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.0'
-    implementation 'androidx.wear:wear-complications-data-source-ktx:+'
+    // Use to implement wear watchfaces
+    implementation("androidx.wear.watchface:watchface:1.1.0-alpha02")
+
+    // Use to implement wear watchface complications
+    implementation "androidx.wear.watchface:watchface-complications-data-source:1.1.0-alpha02"
+    // (Kotlin-specific extensions)
+    implementation "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.0-alpha02"
+
     implementation project(path: ':ecmplib')
 }

@@ -2,7 +2,7 @@ package com.artrointel.customcomplication.utils
 
 import android.app.PendingIntent
 import android.graphics.drawable.Icon
-import androidx.wear.complications.data.*
+import androidx.wear.watchface.complications.data.*
 
 class ComplicationDataCreator {
     companion object {

@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
 
-        <service android:name=".test.CounterComplicationService"
+        <service android:name=".example.CounterComplicationService"
             android:icon="@mipmap/ic_launcher"
             android:label="ZTEST"
             android:exported="true"
@@ -35,7 +35,7 @@
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="0"/>
         </service>
-        <receiver android:name=".test.CounterComplicationBroadcast"/>
+        <receiver android:name=".example.CounterComplicationBroadcast"/>
 
 
         <service android:name=".textlinecomplication.TextLineComplicationService"

@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.wear.complications.datasource.ComplicationDataSourceUpdateRequester
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
 
 class TextLineComplicationBroadcast : BroadcastReceiver() {
     private val TAG = javaClass.simpleName
@@ -20,7 +20,7 @@ class TextLineComplicationBroadcast : BroadcastReceiver() {
         if(payload?.handleByCommand() == true && payload!!.complicationId != -1) {
             var requester = ComplicationDataSourceUpdateRequester.Companion.create(context!!, payload!!.dataSource!!)
             requester.requestUpdate(payload!!.complicationId!!)
-            Log.d(TAG, "requested update for complication Id:" + payload!!.complicationId)
+            Log.d(TAG, "complication(" + payload!!.complicationId + ") update requested")
         }
     }
 }

@@ -36,5 +36,5 @@ dependencies {
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.0'
-    implementation 'androidx.wear:wear-complications-data-source-ktx:+'
+    implementation "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.0-alpha02"
 }

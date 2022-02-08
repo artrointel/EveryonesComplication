@@ -1,6 +1,9 @@
 package com.artrointel.everyonescomplication.textlinecomplication
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import com.artrointel.customcomplication.boundary.Payload
@@ -10,9 +13,29 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
         private val TAG = this.javaClass.simpleName
         private val PKG_PREFIX: String = "com.artrointel.everyonescomplication.textlinecomplication."
         val ACTION_TEXTLINE_COMPLICATION = PKG_PREFIX + "action"
+
+        fun create(context: Context, dataSource: ComponentName, complicationId: Int, command: Command) : TextLinePayload {
+            var payload = Bundle()
+            payload.putParcelable(Extra.DATA_SOURCE, dataSource)
+            payload.putInt(Extra.COMPLICATION_ID, complicationId)
+            payload.putString(Extra.COMMAND, command.name)
+            return TextLinePayload(context, payload)
+        }
+
+        fun createIntentForBroadcastAction(command: String) : Intent {
+            var intent = Intent()
+            intent.action = ACTION_TEXTLINE_COMPLICATION
+            intent.putExtra(Extra.COMMAND, command)
+            return intent
+        }
+
+        fun getIntentFilter(): IntentFilter {
+            return IntentFilter(ACTION_TEXTLINE_COMPLICATION)
+        }
     }
 
     enum class Command {
+        NONE,
         NEXT,
         SET,
     }
@@ -51,7 +74,7 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
 
     fun getCurrentTextLine() : String {
         var idx = accessor.reader().getInt(Key.CURRENT, 0)
-        return accessor.reader().getString(Key.TEXTLINE + idx.toString(), "")!!
+        return accessor.reader().getString(Key.TEXTLINE + idx.toString(), "ERR No Data on " + idx)!! // TODO DBG
     }
 
     fun getInterval() : Int {
@@ -63,7 +86,7 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
         var size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
-        Log.d(TAG, "SHOW:"+accessor.reader().getString(Key.TEXTLINE + idx, "err")) // TODO dbg
+        Log.d(TAG, "SHOW:" + accessor.reader().getString(Key.TEXTLINE + (idx + 1) % size, "err")) // TODO dbg
     }
 
     private fun setTextLines() {

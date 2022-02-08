@@ -19,7 +19,7 @@ class TextLineConfigurationActivity : Activity() {
     @Override
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        registerReceiver(receiver, IntentFilter(TextLinePayload.ACTION_TEXTLINE_COMPLICATION))
+        registerReceiver(receiver, TextLinePayload.getIntentFilter())
 
         configurationsBinding = TextlineConfigurationsBinding.inflate(layoutInflater)
         initializeConfigActivity()
@@ -56,10 +56,7 @@ class TextLineConfigurationActivity : Activity() {
     }
 
     private fun applyChanges() {
-        intent = Intent()
-        intent.action = TextLinePayload.ACTION_TEXTLINE_COMPLICATION
-        intent.putExtra(Payload.Extra.COMMAND, TextLinePayload.Command.SET.name)
-
+        intent = TextLinePayload.createIntentForBroadcastAction(TextLinePayload.Command.SET.name)
         val size = configurationsBinding.textContainer.childCount
         for (i in 0 until size) {
             val item = configurationsBinding.textContainer.getChildAt(i) as LinearLayout

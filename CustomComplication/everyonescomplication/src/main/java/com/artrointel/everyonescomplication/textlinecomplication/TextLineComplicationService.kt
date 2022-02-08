@@ -1,21 +1,21 @@
 package com.artrointel.everyonescomplication.textlinecomplication
 
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.os.Bundle
 import android.util.Log
-import androidx.wear.complications.data.ComplicationData
-import androidx.wear.complications.data.ComplicationType
-import androidx.wear.complications.datasource.ComplicationDataSourceService
-import androidx.wear.complications.datasource.ComplicationRequest
+import androidx.wear.watchface.complications.data.ComplicationData
+import androidx.wear.watchface.complications.data.ComplicationType
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceService
+import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import com.artrointel.customcomplication.boundary.Payload
 import com.artrointel.customcomplication.utils.ComplicationDataCreator
 import com.artrointel.everyonescomplication.R
 
 class TextLineComplicationService : ComplicationDataSourceService() {
-    private val TAG = this.javaClass.simpleName
+    private val TAG = javaClass.simpleName
 
     private var textLinePayload: TextLinePayload? = null
-
     private var previewDataLatest: ComplicationData? = null
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
@@ -33,13 +33,12 @@ class TextLineComplicationService : ComplicationDataSourceService() {
     override fun onComplicationRequest(
         request: ComplicationRequest,
         listener: ComplicationRequestListener) {
-        Log.d(TAG, "onComplicationRequest id:" + request.complicationInstanceId + ", Type:" + request.complicationType + ", component:" + TextLineComplicationService::class::simpleName.toString())
+        Log.d(TAG, "onComplicationRequest id:" + request.complicationInstanceId
+                + ", Type:" + request.complicationType)
 
-        var dataSource = ComponentName(this, TextLineComplicationService::class::simpleName.toString())
+        var dataSource = ComponentName(this, TextLineComplicationService::class.java)
 
-        var extra = Bundle()
-        extra.putInt(Payload.Extra.COMPLICATION_ID, request.complicationInstanceId)
-        textLinePayload = TextLinePayload(this, extra)
+        textLinePayload = TextLinePayload.create(this, dataSource, request.complicationInstanceId, TextLinePayload.Command.NONE)
 
         var complicationData: ComplicationData? = null
         when(request.complicationType){
@@ -61,8 +60,8 @@ class TextLineComplicationService : ComplicationDataSourceService() {
 
         // intent for tapAction with the Complication Data. it would show next text-line on tap action
         var intent = Payload.createPendingIntent(
-            TextLineComplicationBroadcast::class.java, this,
-            dataSource, request.complicationInstanceId, TextLinePayload.Command.NEXT.name)
+            TextLineComplicationBroadcast::class.java,
+            this, dataSource, request.complicationInstanceId, TextLinePayload.Command.NEXT.name)
 
         return ComplicationDataCreator.longText(
             text, text, intent)
@@ -75,7 +74,8 @@ class TextLineComplicationService : ComplicationDataSourceService() {
 
         // intent for tapAction with the Complication Data. it would show next text-line on tap action
         var intent = Payload.createPendingIntent(
-            TextLineComplicationBroadcast::class.java, this,
+            TextLineComplicationBroadcast::class.java,
+            this,
             dataSource, request.complicationInstanceId, TextLinePayload.Command.NEXT.name)
 
         return ComplicationDataCreator.shortText(
