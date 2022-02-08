@@ -14,12 +14,12 @@ abstract class Payload(protected var context: Context, protected var extras: Bun
     var complicationId: Int = extras.getInt(Extra.COMPLICATION_ID, -1)
         private set
 
-    var accessor: SharedPreferenceDAO = SharedPreferenceDAO(context, "DEFAULT")
+    var accessor: SharedPreferenceDAO = SharedPreferenceDAO(context)
         private set
 
     class Extra {
         companion object {
-            private var PKG_PREFIX = "com.artrointel.customcomplication."
+            private var PKG_PREFIX = "com.artrointel.complication."
             var DATA_SOURCE: String = PKG_PREFIX + "DATA_SOURCE"
             var COMPLICATION_ID: String = PKG_PREFIX + "COMPLICATION_ID"
             var COMMAND: String = PKG_PREFIX + "COMMAND"

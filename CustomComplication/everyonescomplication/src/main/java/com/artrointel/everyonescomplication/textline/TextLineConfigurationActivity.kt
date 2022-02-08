@@ -4,13 +4,13 @@ import android.app.Activity
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.LinearLayout
+import com.artrointel.customcomplication.boundary.SharedPreferenceDAO
 import com.artrointel.everyonescomplication.databinding.TextlineConfigurationsBinding
 import com.artrointel.everyonescomplication.databinding.TextlineItemBinding
 
 class TextLineConfigurationActivity : Activity() {
     private lateinit var configurationsBinding: TextlineConfigurationsBinding
     private val receiver = TextLineComplicationBroadcast()
-
 
     @Override
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +30,13 @@ class TextLineConfigurationActivity : Activity() {
     }
 
     private fun initializeConfigActivity() {
+        var dao = SharedPreferenceDAO(this)
+        var size = dao.reader().getInt(TextLinePayload.Key.SIZE, 0)
+        for(i in 0 until size) {
+            var text = dao.reader().getString(TextLinePayload.Key.TEXTLINE_ + i.toString(), "")
+            addTextLineItem(text!!)
+        }
+
         configurationsBinding.imageViewAdd.setOnClickListener {
             addTextLineItem()
         }
@@ -43,8 +50,11 @@ class TextLineConfigurationActivity : Activity() {
         }
     }
 
-    private fun addTextLineItem() {
+    private fun addTextLineItem(text: String = "") {
         val textLineItemBinding = TextlineItemBinding.inflate(layoutInflater)
+        if (text != "") {
+            textLineItemBinding.edittext.setText(text)
+        }
         textLineItemBinding.buttonDelete.setOnClickListener {
             configurationsBinding.textContainer.removeView(textLineItemBinding.itemTextline)
         }
