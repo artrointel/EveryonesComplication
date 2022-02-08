@@ -38,7 +38,7 @@
         <receiver android:name=".example.CounterComplicationBroadcast"/>
 
 
-        <service android:name=".textlinecomplication.TextLineComplicationService"
+        <service android:name=".textline.TextLineComplicationService"
             android:icon="@mipmap/ic_launcher"
             android:label="Long Text Complication"
             android:exported="true"
@@ -65,7 +65,7 @@
                 android:name="android.support.wearable.complications.PROVIDER_CONFIG_ACTION"
                 android:value="TEXTLINE_CONFIG_CHOOSER_ACTION"/>
         </service>
-        <activity android:name=".textlinecomplication.TextLineConfigurationActivity"
+        <activity android:name=".textline.TextLineConfigurationActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="TEXTLINE_CONFIG_CHOOSER_ACTION"/>
@@ -73,7 +73,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <receiver android:name=".textlinecomplication.TextLineComplicationBroadcast"/>
+        <receiver android:name=".textline.TextLineComplicationBroadcast"/>
 
     </application>
 

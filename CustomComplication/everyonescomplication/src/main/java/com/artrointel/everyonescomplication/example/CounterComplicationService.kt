@@ -1,7 +1,6 @@
 package com.artrointel.everyonescomplication.example
 
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Handler
@@ -19,7 +18,7 @@ import com.artrointel.customcomplication.utils.ComplicationDataCreator
 // https://android.googlesource.com/platform/frameworks/support/+/dc52bff1c11947ed0dae6f55bb7089fe6b5758cb/wear/watchface/watchface-complications-data-source-samples/src/main/java/androidx/wear/watchface/complications/datasource/samples/BackgroundDataSourceService.kt
 
 class CounterComplicationService : ComplicationDataSourceService() {
-    private val TAG = javaClass.simpleName
+    private val TAG = CounterComplicationService::class.simpleName
 
     var updateRequester: ComplicationDataSourceUpdateRequester? = null
 
@@ -34,34 +33,34 @@ class CounterComplicationService : ComplicationDataSourceService() {
     }
 
     fun test() {
-        Log.d(TAG, "test");
+        Log.d(TAG, "test code")
         updateRequester?.requestUpdateAll()
         Handler(Looper.getMainLooper()).postDelayed(this::test, 1000)
     }
 
     override fun onComplicationActivated(complicationInstanceId: Int, type: ComplicationType) {
-        Log.d(TAG, "onComplicationActivated id:" + complicationInstanceId + ", Type:" + type)
+        Log.d(TAG, "onComplicationActivated id:$complicationInstanceId, Type:$type")
         //test()
     }
 
     override fun onComplicationRequest(
         request: ComplicationRequest,
         listener: ComplicationRequestListener) {
-        Log.d(TAG, "on2ComplicationRequest id:" + request.complicationInstanceId + ", Type:" + request.complicationType)
+        Log.d(TAG, "onComplicationRequest id: ${request.complicationInstanceId}, Type: ${request.complicationType}")
 
-        var dataSource = ComponentName(this, CounterComplicationService::class.java)
-        Log.d(TAG, "KWH dataSource String name : " + CounterComplicationService::class.java)
+        val dataSource = ComponentName(this, CounterComplicationService::class.java)
+        Log.d(TAG, "dataSource name: ${CounterComplicationService::class.java}")
 
-        var complicationId = request.complicationInstanceId
+        val complicationId = request.complicationInstanceId
         var complicationData: ComplicationData? = null
-        var preferenceDAO = SharedPreferenceDAO(this, "default")
-        var counter = preferenceDAO.reader().getInt("counter", -1)
+        val preferenceDAO = SharedPreferenceDAO(this, "default")
+        val counter = preferenceDAO.reader().getInt("counter", -1)
 
-        var intent = Intent(this, CounterComplicationBroadcast::class.java)
+        val intent = Intent(this, CounterComplicationBroadcast::class.java)
         intent.putExtra("dataSource", dataSource)
         intent.putExtra("complicationId", complicationId)
 
-        var pendingIntent = PendingIntent.getBroadcast(
+        val pendingIntent = PendingIntent.getBroadcast(
             this, complicationId, intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
@@ -72,6 +71,9 @@ class CounterComplicationService : ComplicationDataSourceService() {
             ComplicationType.SHORT_TEXT -> {
                 complicationData = ComplicationDataCreator.shortText(counter.toString(), counter.toString(), pendingIntent)
 
+            }
+            else -> {
+                Log.e(TAG, "Unsupported Complication Type: ${complicationData.toString()}")
             }
         }
         listener.onComplicationData(complicationData!!)
