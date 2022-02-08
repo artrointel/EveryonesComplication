@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="unit_of_time">
+        <item>days</item>
+        <item>hours</item>
+        <item>min</item>
+        <item>sec</item>
+    </string-array>
+</resources>
