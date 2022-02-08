@@ -14,7 +14,7 @@ abstract class Payload(protected var context: Context, protected var extras: Bun
     var complicationId: Int = extras.getInt(Extra.COMPLICATION_ID, -1)
         private set
 
-    var accessor: SharedPreferenceDAO = SharedPreferenceDAO(context, Extra.COMPLICATION_ID + complicationId.toString())
+    var accessor: SharedPreferenceDAO = SharedPreferenceDAO(context, "DEFAULT")
         private set
 
     class Extra {
@@ -26,6 +26,10 @@ abstract class Payload(protected var context: Context, protected var extras: Bun
         }
     }
 
+    fun getPayload(): Bundle {
+        return extras;
+    }
+
     /**
      * Implemented from derived class along the business model.
      * handle the payload by command.
@@ -33,6 +37,7 @@ abstract class Payload(protected var context: Context, protected var extras: Bun
     abstract fun handleByCommand() : Boolean;
 
     companion object {
+
         fun createPendingIntent(
             receiver: Class<out BroadcastReceiver>, context: Context,
             dataSource: ComponentName, complicationId: Int,
