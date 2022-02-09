@@ -38,8 +38,9 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
 
     enum class Command {
         NONE,
+        SET_NEXT,
         REQUEST_REFRESH,
-        SET_DATA,
+        SET_DATA, // private apikey, alarm, show crypto top x, update frequency, etc
     }
 
     class Key {
