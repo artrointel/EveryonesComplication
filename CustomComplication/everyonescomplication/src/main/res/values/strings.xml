@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Everyones Complication</string>
-    <string name="preview_textline">Every cloud has a silver lining</string>
+    <string name="preview_long_textline">Every cloud has a silver lining</string>
+    <string name="preview_short_textline">ShortText</string>
 </resources>
