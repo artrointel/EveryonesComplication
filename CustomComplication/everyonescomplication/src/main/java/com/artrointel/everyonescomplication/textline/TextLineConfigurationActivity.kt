@@ -55,6 +55,7 @@ class TextLineConfigurationActivity : Activity() {
         try {
             selectedUnit = dao.reader().getInt(TextLinePayload.Key.INTERVAL_UNIT, 0)
             seconds = dao.reader().getLong(TextLinePayload.Key.INTERVAL, 0L)
+            Log.e("act", "interval read"+seconds.toString())
             when(selectedUnit) {
                 0 -> { // days
                     time = seconds / (3600*24L)
@@ -63,12 +64,13 @@ class TextLineConfigurationActivity : Activity() {
                     time = seconds / 3600L
                 }
                 2 -> { // minutes
-                    time = seconds / 60
+                    time = seconds / 60L
                 }
                 3 -> { // seconds
                     // do nothing
+                    time = seconds
                 }
-                else -> {} // do nothing
+                else -> {} // do nothing when there was no data
             }
         } catch (e: Exception) {
             e.printStackTrace()
