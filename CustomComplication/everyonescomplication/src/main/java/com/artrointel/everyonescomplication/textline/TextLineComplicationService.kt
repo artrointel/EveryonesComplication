@@ -1,10 +1,13 @@
 package com.artrointel.everyonescomplication.textline
 
 import android.content.ComponentName
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.datasource.ComplicationDataSourceService
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
 import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import com.artrointel.customcomplication.boundary.Payload
 import com.artrointel.customcomplication.utils.ComplicationDataCreator
@@ -30,7 +33,6 @@ class TextLineComplicationService : ComplicationDataSourceService() {
 
     override fun onComplicationActivated(complicationInstanceId: Int, type: ComplicationType) {
         Log.d(TAG, "onComplicationActivated id:$complicationInstanceId, Type:$type")
-
     }
 
     override fun onComplicationRequest(

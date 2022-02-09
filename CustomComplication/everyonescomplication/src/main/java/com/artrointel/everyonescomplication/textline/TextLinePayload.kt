@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import com.artrointel.customcomplication.boundary.Payload
 
@@ -22,9 +23,11 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
             return TextLinePayload(context, payload)
         }
 
-        fun createIntentForBroadcastAction(command: String) : Intent {
+        fun createIntentForBroadcastAction(context: Context, complicationId: Int, command: String) : Intent {
             val intent = Intent()
             intent.action = ACTION_TEXT_LINE_COMPLICATION
+            intent.putExtra(Extra.DATA_SOURCE,  ComponentName(context, TextLineComplicationService::class.java))
+            intent.putExtra(Extra.COMPLICATION_ID, complicationId)
             intent.putExtra(Extra.COMMAND, command)
             return intent
         }
@@ -44,7 +47,8 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
         companion object {
             const val SIZE = PKG_PREFIX + "SIZE"
             const val CURRENT = PKG_PREFIX + "CURRENT"
-            const val INTERVAL = PKG_PREFIX + "INTERVAL" // TODO in hour?
+            const val INTERVAL = PKG_PREFIX + "INTERVAL" // in seconds
+            const val INTERVAL_UNIT = PKG_PREFIX + "INTERVAL_UNIT"
             const val TEXTLINE_ = PKG_PREFIX + "TEXTLINE_"
         }
     }
@@ -75,15 +79,17 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
         return accessor.reader().getString(Key.TEXTLINE_ + idx.toString(), "")!!
     }
 
-    fun getInterval() : Int {
-        return accessor.reader().getInt(Key.INTERVAL, 0)
+    fun getInterval() : Long {
+        return accessor.reader().getLong(Key.INTERVAL, 0L)
     }
 
-    private fun setNext() {
+    fun setNext(apply: Boolean = false) {
         val idx : Int = accessor.reader().getInt(Key.CURRENT, 0)
         val size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
+
+        if(apply) accessor.writer().apply()
     }
 
     private fun setTextLineData() {
@@ -97,7 +103,10 @@ class TextLinePayload(context: Context, payload: Bundle) : Payload(context, payl
             accessor.writer().putString(Key.TEXTLINE_ + i.toString(), textLine)
         }
 
-        val interval = extras.getInt(Key.INTERVAL, 0)
-        accessor.writer().putInt(Key.INTERVAL, interval)
+        val interval = extras.getLong(Key.INTERVAL, 0L)
+        accessor.writer().putLong(Key.INTERVAL, interval)
+
+        val selectedItem = extras.getInt(Key.INTERVAL_UNIT, 0)
+        accessor.writer().putInt(Key.INTERVAL_UNIT, selectedItem)
     }
 }
