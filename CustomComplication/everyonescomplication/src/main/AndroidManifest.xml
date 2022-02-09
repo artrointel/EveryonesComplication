@@ -13,9 +13,9 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.DeviceDefault">
 
-        <service android:name=".example.CounterComplicationService"
+        <service android:name=".crypto.CryptoComplicationService"
             android:icon="@mipmap/ic_launcher"
-            android:label="ZTEST"
+            android:label="Long Text Complication"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
@@ -34,9 +34,21 @@
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="0"/>
-        </service>
-        <receiver android:name=".example.CounterComplicationBroadcast"/>
 
+            <!-- To open Configuration activity, use this meta-data  -->
+            <meta-data
+                android:name="android.support.wearable.complications.PROVIDER_CONFIG_ACTION"
+                android:value="CRYPTO_CONFIG_CHOOSER_ACTION"/>
+        </service>
+        <activity android:name=".crypto.CryptoConfigurationActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="CRYPTO_CONFIG_CHOOSER_ACTION"/>
+                <category android:name="android.support.wearable.complications.category.PROVIDER_CONFIG"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <receiver android:name=".crypto.CryptoComplicationBroadcast"/>
 
         <service android:name=".textline.TextLineComplicationService"
             android:icon="@mipmap/ic_launcher"
