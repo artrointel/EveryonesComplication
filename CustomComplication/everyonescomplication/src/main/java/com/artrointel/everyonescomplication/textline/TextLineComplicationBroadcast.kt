@@ -18,13 +18,15 @@ class TextLineComplicationBroadcast : BroadcastReceiver() {
 
     private val updateHandler = Handler(Looper.getMainLooper())
 
-    private fun requestUpdateByInterval(context: Context?) {
+    private fun requestUpdateByInterval(context: Context?, showNext: Boolean = true) {
         val updateRequester = ComplicationDataSourceUpdateRequester.create(context!!, payload!!.dataSource!!)
-        payload!!.setNext(true)
+        if (showNext) {
+            payload!!.setNext(true)
+        }
         updateRequester.requestUpdate(payload!!.complicationId)
 
         Log.d(TAG, "request update by interval")
-        updateHandler.postDelayed({ (this::requestUpdateByInterval)(context); }, updateIntervalInMillis)
+        updateHandler.postDelayed({ (this::requestUpdateByInterval)(context, showNext); }, updateIntervalInMillis)
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -42,7 +44,7 @@ class TextLineComplicationBroadcast : BroadcastReceiver() {
             if(payload!!.complicationId != -1) {
                 if(intent!!.getBooleanExtra(TextLineConfigurationActivity.INTENT_FROM_CONFIGURATION, false)) {
                     updateHandler.removeCallbacksAndMessages(null) // TODO not work.
-                    requestUpdateByInterval(context)
+                    requestUpdateByInterval(context, false)
                 }
                 else {
                     requester.requestUpdate(payload!!.complicationId)
