@@ -21,7 +21,7 @@ import java.util.List;
 public class CryptoAPI {
     private static String cryptoUri = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
     private String mUserApiKey;
-    CryptoAPI(String apiKey) {
+    public CryptoAPI(String apiKey) {
         mUserApiKey = apiKey;
     }
 
@@ -34,7 +34,7 @@ public class CryptoAPI {
         List<NameValuePair> queryParams = new ArrayList<>();
 
         queryParams.add(new BasicNameValuePair("start","1"));
-        queryParams.add(new BasicNameValuePair("limit",n.toString()));
+        queryParams.add(new BasicNameValuePair("limit", n.toString()));
         queryParams.add(new BasicNameValuePair("convert","USD"));
 
         query.addParameters(queryParams);
@@ -51,7 +51,7 @@ public class CryptoAPI {
             System.out.println(response.getStatusLine());
             HttpEntity entity = response.getEntity();
             response_content = EntityUtils.toString(entity);
-            EntityUtils.consume(entity);
+            //EntityUtils.consume(entity);
         } finally {
             response.close();
         }

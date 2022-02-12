@@ -14,9 +14,16 @@ class CryptoComplicationBroadcast : BroadcastReceiver() {
 
     private var payload: CryptoPayload? = null
 
-    private var updateIntervalInMillis: Long = 0L
-
     private val updateHandler = Handler(Looper.getMainLooper())
+
+    private fun requestUpdateByInterval(context: Context?) {
+        val updateRequester = ComplicationDataSourceUpdateRequester.create(context!!, payload!!.dataSource!!)
+        payload!!.queryCryptoData()
+        updateRequester.requestUpdate(payload!!.complicationId)
+
+        Log.d(TAG, "request update by interval")
+        updateHandler.postDelayed({ (this::requestUpdateByInterval)(context); }, 1800 * 1000) // every 30 minutes
+    }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         if(payload == null) {
@@ -28,6 +35,10 @@ class CryptoComplicationBroadcast : BroadcastReceiver() {
         if(payload?.handleByCommand() == true) {
             // Request update the complication directly.
             if(payload!!.complicationId != -1) {
+                if(intent?.getBooleanExtra(CryptoConfigurationActivity.INTENT_FROM_CONFIGURATION, false) == true) {
+                    requestUpdateByInterval(context)
+                }
+
                 val requester = ComplicationDataSourceUpdateRequester.Companion.create(context!!, payload!!.dataSource!!)
                 requester.requestUpdate(payload!!.complicationId)
                 Log.d(TAG, "complicationId(${payload!!.complicationId}) update requested")

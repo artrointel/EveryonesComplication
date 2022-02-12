@@ -20,7 +20,7 @@ class TextLineConfigurationActivity : Activity() {
     private var complicationId: Int = -1
 
     companion object {
-        val INTENT_FROM_CONFIGURATION = "com.artrointel.everyonescomplication.textline.TextLineConfigurationActivity";
+        const val INTENT_FROM_CONFIGURATION = "com.artrointel.everyonescomplication.textline.TextLineConfigurationActivity";
     }
 
     @Override

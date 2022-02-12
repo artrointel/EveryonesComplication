@@ -7,12 +7,14 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import com.artrointel.customcomplication.boundary.Payload
+import com.artrointel.everyonescomplication.crypto.model.CryptoAPI
+import com.artrointel.everyonescomplication.crypto.model.CryptoUserConfig
 
 class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payload) {
     companion object {
         private val TAG = CryptoPayload::class.simpleName
         private const val PKG_PREFIX: String = "com.artrointel.everyonescomplication.textlinecomplication."
-        private const val ACTION_TEXT_LINE_COMPLICATION = PKG_PREFIX + "action"
+        private const val ACTION_CRYPTO_COMPLICATION = PKG_PREFIX + "action"
 
         fun create(context: Context, dataSource: ComponentName, complicationId: Int, command: Command) : CryptoPayload {
             val payload = Bundle()
@@ -24,7 +26,7 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
 
         fun createIntentForBroadcastAction(context: Context, complicationId: Int, command: String) : Intent {
             val intent = Intent()
-            intent.action = ACTION_TEXT_LINE_COMPLICATION
+            intent.action = ACTION_CRYPTO_COMPLICATION
             intent.putExtra(Extra.DATA_SOURCE,  ComponentName(context, CryptoComplicationService::class.java))
             intent.putExtra(Extra.COMPLICATION_ID, complicationId)
             intent.putExtra(Extra.COMMAND, command)
@@ -32,7 +34,7 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         }
 
         fun getIntentFilter(): IntentFilter {
-            return IntentFilter(ACTION_TEXT_LINE_COMPLICATION)
+            return IntentFilter(ACTION_CRYPTO_COMPLICATION)
         }
     }
 
@@ -40,15 +42,17 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         NONE,
         SET_NEXT,
         REQUEST_REFRESH,
-        SET_DATA, // private apikey, alarm, show crypto top n, update frequency, etc
+        SET_CONFIG,
     }
 
     class Key {
         companion object {
             const val SIZE = PKG_PREFIX + "SIZE"
             const val CURRENT = PKG_PREFIX + "CURRENT"
-            const val ALARM_ON_CHANGE = PKG_PREFIX + "ALARM"
-            const val CRYPTO_ = PKG_PREFIX + "CRYPTO_" // JSON
+            const val NOTI_ENABLED = PKG_PREFIX + "ENABLED"
+            const val NOTI_ON_CHANGE = PKG_PREFIX + "NOTI"
+            const val CRYPTO_DATA = PKG_PREFIX + "CRYPTO_" // JSON
+            const val PRIVATE_KEY = PKG_PREFIX + "PRIVATE_KEY"
         }
     }
 
@@ -60,8 +64,8 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
                 setNext()
                 needComplicationUpdated = true
             }
-            Command.SET_DATA.name -> {
-                setCryptoData()
+            Command.SET_CONFIG.name -> {
+                setCryptoConfig()
                 needComplicationUpdated = true
             }
             else -> {
@@ -73,38 +77,49 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         return needComplicationUpdated
     }
 
-    fun getCurrentCrypto() : String {
-        val idx = accessor.reader().getInt(Key.CURRENT, 0)
-        return accessor.reader().getString(Key.CRYPTO_ + idx.toString(), "")!!
-    }
-
-
     fun setNext(apply: Boolean = false) {
         val idx : Int = accessor.reader().getInt(Key.CURRENT, 0)
         val size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
-
-        if(apply) accessor.writer().apply()
     }
 
-    private fun setCryptoData() {
+    fun queryCryptoData() {
+        val key = accessor.reader().getString(Key.PRIVATE_KEY, "")
+        val api = CryptoAPI(key)
+        val jsonData = api.queryTopPrices(accessor.reader().getInt(Key.SIZE, 1))
+        accessor.writer().putString(Key.CRYPTO_DATA, jsonData)
+    }
+
+    fun getCryptoConfig(): CryptoUserConfig {
+        val size = accessor.reader().getInt(Key.SIZE, 0)
+        val notiEnabled = accessor.reader().getBoolean(Key.NOTI_ENABLED, false)
+        val notiOnChange = accessor.reader().getFloat(Key.NOTI_ON_CHANGE, 0.0f)
+        val privateKey = accessor.reader().getString(Key.PRIVATE_KEY, "")
+        return CryptoUserConfig(size, notiEnabled, notiOnChange, privateKey!!)
+    }
+
+    private fun setCryptoConfig() {
         accessor.writer().clear()
 
         // Size of the crypto data
         val size = extras.getInt(Key.SIZE, 0)
         accessor.writer().putInt(Key.SIZE, size)
 
-        // Save crypto json
-        for(i: Int in 0 until size) {
-            val textLine = extras.getString(Key.CRYPTO_ + i.toString())
-            accessor.writer().putString(Key.CRYPTO_ + i.toString(), textLine)
-        }
+        // Enabled Notification
+        val notiEnabled = extras.getBoolean(Key.NOTI_ENABLED, false)
+        accessor.writer().putBoolean(Key.NOTI_ENABLED, notiEnabled)
 
-        // Alarm data, set 0 to no alarm
-        val alarmOnChange = extras.getInt(Key.ALARM_ON_CHANGE.toString(), 0)
-        accessor.writer().putInt(Key.ALARM_ON_CHANGE.toString(), alarmOnChange)
+        // NotiOnChange
+        val notiOnChange = extras.getFloat(Key.NOTI_ON_CHANGE, 0.0f)
+        accessor.writer().putFloat(Key.NOTI_ON_CHANGE, notiOnChange)
 
-        //
+        // Private Key
+        val privateKey = extras.getString(Key.PRIVATE_KEY, "")
+        accessor.writer().putString(Key.PRIVATE_KEY, privateKey)
+    }
+
+    fun getCryptoData() : String {
+        return accessor.reader().getString(Key.CRYPTO_DATA, "")!!
     }
 }

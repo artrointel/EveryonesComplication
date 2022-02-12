@@ -14,7 +14,7 @@
         android:theme="@android:style/Theme.DeviceDefault">
 
         <service android:name=".crypto.CryptoComplicationService"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/crypto_btc"
             android:label="Crypto Currency Data"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">

@@ -36,6 +36,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    //useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
@@ -54,7 +55,10 @@ dependencies {
     implementation "androidx.wear.watchface:watchface-complications-data-source-ktx:1.1.0-alpha02"
 
     implementation project(path: ':ecmplib')
-    implementation files('libs\\commons-logging-1.2.jar')
-    implementation files('libs\\httpclient-4.5.13.jar')
-    implementation files('libs\\httpcore-4.4.13.jar')
+
+    implementation 'org.apache.httpcomponents:httpcore:4.4.13'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    //implementation files('libs\\commons-logging-1.2.jar')
+    //implementation files('libs\\httpclient-4.5.13.jar')
+    //implementation files('libs\\httpcore-4.4.13.jar')
 }
