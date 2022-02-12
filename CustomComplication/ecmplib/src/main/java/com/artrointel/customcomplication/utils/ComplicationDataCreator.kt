@@ -16,6 +16,18 @@ class ComplicationDataCreator {
                 .setTapAction(tapAction).build()
         }
 
+        fun shortText(
+            icon: Icon, title: String, text: String, desc: String = text,
+            tapAction: PendingIntent? = null) : ShortTextComplicationData {
+
+            return ShortTextComplicationData.Builder(
+                complicationText(text),
+                complicationText(desc))
+                .setTitle(complicationText(title))
+                .setMonochromaticImage(MonochromaticImage.Builder(icon).build())
+                .setTapAction(tapAction).build()
+        }
+
         fun longText(
             text: String, desc: String = text,
             tapAction: PendingIntent? = null) : LongTextComplicationData {

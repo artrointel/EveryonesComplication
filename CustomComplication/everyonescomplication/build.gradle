@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
 }
 
+
 android {
     compileSdk 32
 
@@ -19,6 +20,10 @@ android {
         versionCode 1
         versionName "1.0"
 
+    }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
     }
 
     buildTypes {

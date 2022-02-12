@@ -48,9 +48,6 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
         var complicationData: ComplicationData? = null
         when(request.complicationType){
-            ComplicationType.LONG_TEXT -> {
-                complicationData = createLongTextLineComplicationData(request, dataSource)
-            }
             ComplicationType.SHORT_TEXT -> {
                 complicationData = createShortTextLineComplicationData(request, dataSource)
             }
@@ -62,24 +59,16 @@ class CryptoComplicationService : ComplicationDataSourceService() {
         listener.onComplicationData(complicationData!!)
     }
 
-    private fun createLongTextLineComplicationData(
-        request: ComplicationRequest, dataSource: ComponentName)
-            : ComplicationData {
-        val text = cryptoPayload!!.getCurrentText()
-
-        // intent for tapAction with the Complication Data. it would show next text-line on tap action
-        val intent = Payload.createPendingIntent(
-            CryptoComplicationBroadcast::class.java,
-            this, dataSource, request.complicationInstanceId, CryptoPayload.Command.REQUEST_REFRESH.name)
-
-        return ComplicationDataCreator.longText(
-            text, text, intent)
-    }
-
     private fun createShortTextLineComplicationData(
         request: ComplicationRequest, dataSource: ComponentName)
             : ComplicationData {
-        val text = cryptoPayload!!.getCurrentText()
+        // TODO
+        val text = cryptoPayload!!.getCurrentCrypto()
+        // Parse crypto json
+        // val icon is from Bitmap from base64
+        // val title is symbol
+        // val text is price
+
 
         // intent for tapAction with the Complication Data. it would show next text-line on tap action
         val intent = Payload.createPendingIntent(

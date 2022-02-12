@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import androidx.wear.watchface.complications.datasource.ComplicationDataSourceService
 import com.artrointel.customcomplication.boundary.SharedPreferenceDAO
 import com.artrointel.everyonescomplication.R
+import com.artrointel.everyonescomplication.databinding.CryptoConfigurationsBinding
 import com.artrointel.everyonescomplication.databinding.TextlineConfigurationsBinding
 import com.artrointel.everyonescomplication.databinding.TextlineItemBinding
 import java.lang.Exception
@@ -15,7 +16,7 @@ import java.lang.Exception
 class CryptoConfigurationActivity : Activity() {
     private val TAG = CryptoConfigurationActivity::class.simpleName
 
-    private lateinit var configurationsBinding: TextlineConfigurationsBinding
+    private lateinit var configurationsBinding: CryptoConfigurationsBinding
     private val receiver = CryptoComplicationBroadcast()
     private var complicationId: Int = -1
 
@@ -30,7 +31,7 @@ class CryptoConfigurationActivity : Activity() {
         complicationId = intent.getIntExtra(ComplicationDataSourceService.EXTRA_CONFIG_COMPLICATION_ID, -1)
         Log.d(TAG, "Configuration Opened with id: $complicationId")
 
-        configurationsBinding = TextlineConfigurationsBinding.inflate(layoutInflater)
+        configurationsBinding = CryptoConfigurationsBinding.inflate(layoutInflater)
         initializeConfigActivity()
         setContentView(configurationsBinding.root)
     }
@@ -43,44 +44,8 @@ class CryptoConfigurationActivity : Activity() {
 
     private fun initializeConfigActivity() {
         val dao = SharedPreferenceDAO(this)
-        val size = dao.reader().getInt(CryptoPayload.Key.SIZE, 0)
-        for(i in 0 until size) {
-            val text = dao.reader().getString(CryptoPayload.Key.TEXTLINE_ + i.toString(), "")
-            addTextLineItem(text!!)
-        }
 
-        var selectedUnit = 0
-        var seconds = 0L
-        var time = 0L
-        try {
-            selectedUnit = dao.reader().getInt(CryptoPayload.Key.INTERVAL_UNIT, 0)
-            seconds = dao.reader().getLong(CryptoPayload.Key.INTERVAL, 0L)
-            when(selectedUnit) {
-                0 -> { // days
-                    time = seconds / (3600*24L)
-                }
-                1 -> { // hours
-                    time = seconds / 3600L
-                }
-                2 -> { // minutes
-                    time = seconds / 60L
-                }
-                3 -> { // seconds
-                    // do nothing
-                    time = seconds
-                }
-                else -> {} // do nothing when there was no data
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        configurationsBinding.itemInterval.spinner.setSelection(selectedUnit)
-        configurationsBinding.itemInterval.edittext.setText(time.toString())
-
-
-        configurationsBinding.imageViewAdd.setOnClickListener {
-            addTextLineItem()
-        }
+        // TODO bind data top x, alarm data
 
         configurationsBinding.buttonApply.setOnClickListener {
             applyChanges()
@@ -91,55 +56,11 @@ class CryptoConfigurationActivity : Activity() {
         }
     }
 
-    private fun addTextLineItem(text: String = "") {
-        val textLineItemBinding = TextlineItemBinding.inflate(layoutInflater)
-        if (text != "") {
-            textLineItemBinding.edittext.setText(text)
-        }
-        textLineItemBinding.buttonDelete.setOnClickListener {
-            configurationsBinding.textContainer.removeView(textLineItemBinding.itemTextline)
-        }
-        configurationsBinding.textContainer.addView(textLineItemBinding.itemTextline)
-    }
-
     private fun applyChanges() {
         var intent = CryptoPayload.createIntentForBroadcastAction(this, complicationId, CryptoPayload.Command.SET_DATA.name)
         intent.putExtra(INTENT_FROM_CONFIGURATION, true)
-        val size = configurationsBinding.textContainer.childCount
-        for (i in 0 until size) {
-            val item = configurationsBinding.textContainer.getChildAt(i) as LinearLayout
-            val editText = item.getChildAt(0) as EditText
-            intent.putExtra(CryptoPayload.Key.TEXTLINE_ + i.toString(), editText.text.toString())
-        }
-        intent.putExtra(CryptoPayload.Key.SIZE, size)
 
-        //
-        val unitOfTime = configurationsBinding.itemInterval.spinner.selectedItem
-        var seconds = 0L
-        try {
-            seconds = configurationsBinding.itemInterval.edittext.text.toString().toLong()
-            when (unitOfTime) {
-                resources.getStringArray(R.array.unit_of_time)[0] -> { // days
-                    seconds *= 3600*24L
-                }
-                resources.getStringArray(R.array.unit_of_time)[1] -> { // hours
-                    seconds *= 3600L
-                }
-                resources.getStringArray(R.array.unit_of_time)[2] -> { // minutes
-                    seconds *= 60L
-                }
-                resources.getStringArray(R.array.unit_of_time)[3] -> { // seconds
-                    // Do nothing.
-                }
-                else -> {
-                    Log.e(TAG, "Unsupported unit of time")
-                }
-            }
-        } catch (e: Exception) {
-            Log.d(TAG, "Interval is not set")
-        }
-        intent.putExtra(CryptoPayload.Key.INTERVAL, seconds)
-        intent.putExtra(CryptoPayload.Key.INTERVAL_UNIT, configurationsBinding.itemInterval.spinner.selectedItemPosition)
+        // TODO save top x, alarm data
 
         sendBroadcast(intent)
         setResult(RESULT_OK)

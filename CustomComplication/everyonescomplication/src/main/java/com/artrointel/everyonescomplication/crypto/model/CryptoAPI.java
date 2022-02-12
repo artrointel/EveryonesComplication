@@ -1,5 +1,7 @@
 package com.artrointel.everyonescomplication.crypto.model;
 
+import androidx.annotation.NonNull;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
@@ -19,20 +21,23 @@ import java.util.List;
 public class CryptoAPI {
     private static String cryptoUri = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
     private String mUserApiKey;
-    private List<NameValuePair> mQueryParams = new ArrayList<>();
     CryptoAPI(String apiKey) {
-        mQueryParams.add(new BasicNameValuePair("start","1"));
-        mQueryParams.add(new BasicNameValuePair("limit","10"));
-        mQueryParams.add(new BasicNameValuePair("convert","USD"));
         mUserApiKey = apiKey;
     }
 
-    public String queryTop10Prices()
+    public String queryTopPrices(@NonNull Integer n)
             throws URISyntaxException, IOException {
         String response_content = "";
 
         URIBuilder query = new URIBuilder(cryptoUri);
-        query.addParameters(mQueryParams);
+
+        List<NameValuePair> queryParams = new ArrayList<>();
+
+        queryParams.add(new BasicNameValuePair("start","1"));
+        queryParams.add(new BasicNameValuePair("limit",n.toString()));
+        queryParams.add(new BasicNameValuePair("convert","USD"));
+
+        query.addParameters(queryParams);
 
         CloseableHttpClient client = HttpClients.createDefault();
         HttpGet request = new HttpGet(query.build());

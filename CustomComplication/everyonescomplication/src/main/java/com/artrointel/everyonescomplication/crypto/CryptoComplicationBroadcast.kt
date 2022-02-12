@@ -18,17 +18,6 @@ class CryptoComplicationBroadcast : BroadcastReceiver() {
 
     private val updateHandler = Handler(Looper.getMainLooper())
 
-    private fun requestUpdateByInterval(context: Context?, showNext: Boolean = true) {
-        val updateRequester = ComplicationDataSourceUpdateRequester.create(context!!, payload!!.dataSource!!)
-        if (showNext) {
-            payload!!.setNext(true)
-        }
-        updateRequester.requestUpdate(payload!!.complicationId)
-
-        Log.d(TAG, "request update by interval")
-        updateHandler.postDelayed({ (this::requestUpdateByInterval)(context, showNext); }, updateIntervalInMillis)
-    }
-
     override fun onReceive(context: Context?, intent: Intent?) {
         if(payload == null) {
             payload = CryptoPayload(context!!, intent?.extras!!)
@@ -38,17 +27,9 @@ class CryptoComplicationBroadcast : BroadcastReceiver() {
 
         if(payload?.handleByCommand() == true) {
             // Request update the complication directly.
-            val requester = ComplicationDataSourceUpdateRequester.Companion.create(context!!, payload!!.dataSource!!)
-            updateIntervalInMillis = payload!!.getInterval() * 1000L
-
             if(payload!!.complicationId != -1) {
-                if(intent!!.getBooleanExtra(CryptoConfigurationActivity.INTENT_FROM_CONFIGURATION, false)) {
-                    updateHandler.removeCallbacksAndMessages(null) // TODO not work.
-                    requestUpdateByInterval(context, false)
-                }
-                else {
-                    requester.requestUpdate(payload!!.complicationId)
-                }
+                val requester = ComplicationDataSourceUpdateRequester.Companion.create(context!!, payload!!.dataSource!!)
+                requester.requestUpdate(payload!!.complicationId)
                 Log.d(TAG, "complicationId(${payload!!.complicationId}) update requested")
             }
             else {

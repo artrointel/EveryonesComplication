@@ -3,7 +3,7 @@
     <data>
         <variable
             name="configActivity"
-            type="com.artrointel.everyonescomplication.textline.TextLineConfigurationActivity" />
+            type="com.artrointel.everyonescomplication.crypto.CryptoConfigurationActivity" />
     </data>
 
     <LinearLayout
@@ -13,38 +13,65 @@
         android:gravity="center">
 
         <include
-            layout="@layout/textline_item_interval"
+            layout="@layout/crypto_item_top"
             android:id="@+id/item_interval"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"/>
-        <ScrollView
-            android:id="@+id/scroll_view"
-            android:layout_width="match_parent"
-            android:layout_height="100dp">
+            android:layout_width="wrap_content"/>
 
-            <LinearLayout
-                android:id="@+id/text_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
-            </LinearLayout>
 
-        </ScrollView>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10dp"
+                android:textAlignment="center"
+                android:text="Alarm on "/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="10dp"
+                android:textAlignment="center"
+                android:text="% change per an hour" />
+
+        </LinearLayout>
+
+        <Switch
+            android:id="@+id/alarmSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Alarm" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textSize="10dp"
+                android:text="API Key"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:textSize="8dp"
+                android:text="private key from coin market cap"/>
+        </LinearLayout>
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:gravity="center">
-            <ImageButton
-                android:id="@+id/image_view_add"
-                android:src="@drawable/add"
-                android:clickable="true"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:gravity="center"/>
             <Button
                 android:id="@+id/button_apply"
                 android:text="Apply"
@@ -59,6 +86,7 @@
                 android:layout_width="60dp"
                 android:layout_height="40dp"
                 android:gravity="center"/>
+
         </LinearLayout>
 
     </LinearLayout>
