@@ -3,6 +3,9 @@
     package="com.artrointel.everyonescomplication">
 
     <uses-feature android:name="android.hardware.type.watch" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
     <!-- Official guidance link
          https://developer.android.com/reference/androidx/wear/watchface/complications/datasource/ComplicationDataSourceService -->
 
@@ -11,7 +14,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@android:style/Theme.DeviceDefault"
+        android:networkSecurityConfig="@xml/network_security_config">
 
         <service android:name=".crypto.CryptoComplicationService"
             android:icon="@drawable/crypto_btc"

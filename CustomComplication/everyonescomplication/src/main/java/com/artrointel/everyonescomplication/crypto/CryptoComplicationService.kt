@@ -35,6 +35,7 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
     override fun onComplicationActivated(complicationInstanceId: Int, type: ComplicationType) {
         Log.d(TAG, "onComplicationActivated id:$complicationInstanceId, Type:$type")
+
     }
 
     override fun onComplicationRequest(
@@ -65,6 +66,9 @@ class CryptoComplicationService : ComplicationDataSourceService() {
             : ComplicationData {
 
         val jsonData = cryptoPayload!!.getCryptoData()
+        if(jsonData == null || jsonData == "") {
+            Log.d(TAG, "Failed to get crypto data.")
+        }
         val cryptoInfo = CryptoParser()
             .load(jsonData)
             .cryptoInfoList[cryptoPayload!!.accessor.reader().getInt(CryptoPayload.Key.CURRENT, 0)]
