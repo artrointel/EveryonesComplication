@@ -7,7 +7,6 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import com.artrointel.customcomplication.boundary.Payload
-import com.artrointel.everyonescomplication.crypto.model.CryptoAPI
 import com.artrointel.everyonescomplication.crypto.model.CryptoConnection
 import com.artrointel.everyonescomplication.crypto.model.CryptoUserConfig
 
@@ -85,14 +84,24 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
     }
 
-    fun queryCryptoData() {
+    fun queryCryptoData(onCryptoDataUpdated: Runnable) {
         Log.d(TAG, "query to update Crypto Data.")
+        val size = accessor.reader().getInt(Key.SIZE, 1)
         val key = accessor.reader().getString(Key.PRIVATE_KEY, "")
-        val api = CryptoAPI(key)
-        val connTest = CryptoConnection(context)
-        connTest.connect()
-        //val jsonData = api.queryTopPrices(accessor.reader().getInt(Key.SIZE, 1))
-        //accessor.writer().putString(Key.CRYPTO_DATA, jsonData)
+
+        Thread.currentThread()
+
+        val conn = CryptoConnection(size, key!!, object: CryptoConnection.OnCryptoDataReceived {
+            override fun onReceived(result: String) {
+                accessor.writer().putString(Key.CRYPTO_DATA, result)
+                accessor.writer().apply()
+            }
+
+            override fun run() {
+                onCryptoDataUpdated.run()
+            }
+        })
+        conn.open()
     }
 
     fun getCryptoConfig(): CryptoUserConfig {

@@ -17,9 +17,11 @@ class CryptoComplicationBroadcast : BroadcastReceiver() {
     private val updateHandler = Handler(Looper.getMainLooper())
 
     private fun requestUpdateByInterval(context: Context?) {
-        val updateRequester = ComplicationDataSourceUpdateRequester.create(context!!, payload!!.dataSource!!)
-        payload!!.queryCryptoData()
-        updateRequester.requestUpdate(payload!!.complicationId)
+        payload!!.queryCryptoData {
+            val updateRequester =
+                ComplicationDataSourceUpdateRequester.create(context!!, payload!!.dataSource!!)
+            updateRequester.requestUpdate(payload!!.complicationId)
+        }
 
         Log.d(TAG, "request update by interval")
         updateHandler.postDelayed({ (this::requestUpdateByInterval)(context); }, 1800 * 1000) // every 30 minutes
