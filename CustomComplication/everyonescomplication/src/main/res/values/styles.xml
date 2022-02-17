@@ -3,5 +3,6 @@
     <style name="spinnerItemStyle">
     <item name="android:textColor">#FFFFFF</item>
     <item name="android:background">#616161</item>
+    <item name="android:textSize">8dp</item>
     </style>
 </resources>

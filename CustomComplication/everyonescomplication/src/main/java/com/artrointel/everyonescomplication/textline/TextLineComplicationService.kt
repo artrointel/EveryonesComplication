@@ -1,13 +1,10 @@
 package com.artrointel.everyonescomplication.textline
 
 import android.content.ComponentName
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.datasource.ComplicationDataSourceService
-import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
 import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import com.artrointel.customcomplication.boundary.Payload
 import com.artrointel.customcomplication.utils.ComplicationDataCreator
@@ -17,18 +14,21 @@ class TextLineComplicationService : ComplicationDataSourceService() {
     private val TAG = TextLineComplicationService::class.simpleName
 
     private var textLinePayload: TextLinePayload? = null
-    private var previewDataLatest: ComplicationData? = null
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
-        if(textLinePayload != null) {
-            Log.d(TAG, "getPreviewData: ${textLinePayload!!.getCurrentTextLine()}")
-            previewDataLatest = ComplicationDataCreator.longText(textLinePayload!!.getCurrentTextLine())
+        var previewData: ComplicationData? = null
+        when(type){
+            ComplicationType.LONG_TEXT -> {
+                previewData = ComplicationDataCreator.longText(resources.getString(R.string.preview_long_textline))
+            }
+            ComplicationType.SHORT_TEXT -> {
+                previewData = ComplicationDataCreator.shortText(resources.getString(R.string.preview_short_textline))
+            }
+            else -> {
+                Log.e(TAG, "Unsupported ComplicationType: $type")
+            }
         }
-
-        if(previewDataLatest == null) {
-            previewDataLatest = ComplicationDataCreator.longText(resources.getString(R.string.preview_textline))
-        }
-        return previewDataLatest
+        return previewData
     }
 
     override fun onComplicationActivated(complicationInstanceId: Int, type: ComplicationType) {
@@ -57,7 +57,6 @@ class TextLineComplicationService : ComplicationDataSourceService() {
                 Log.e(TAG, "Unsupported ComplicationType: ${request.complicationType}")
             }
         }
-        previewDataLatest = complicationData
         listener.onComplicationData(complicationData!!)
     }
 

@@ -3,6 +3,9 @@
     package="com.artrointel.everyonescomplication">
 
     <uses-feature android:name="android.hardware.type.watch" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
     <!-- Official guidance link
          https://developer.android.com/reference/androidx/wear/watchface/complications/datasource/ComplicationDataSourceService -->
 
@@ -11,11 +14,12 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.DeviceDefault">
+        android:theme="@android:style/Theme.DeviceDefault"
+        android:networkSecurityConfig="@xml/network_security_config">
 
-        <service android:name=".example.CounterComplicationService"
-            android:icon="@mipmap/ic_launcher"
-            android:label="ZTEST"
+        <service android:name=".crypto.CryptoComplicationService"
+            android:icon="@drawable/crypto_btc"
+            android:label="Crypto Currency Data"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
@@ -27,16 +31,28 @@
             See ComplicationType class for the support. -->
             <meta-data
                 android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="LONG_TEXT, SHORT_TEXT"/>
+                android:value="SHORT_TEXT"/>
 
             <!-- The number of seconds of complication update request. 0 means never update by the time. -->
             <!-- SYNCHROUNOUS_UPDATE_PERIOD_MILLISECONDS also exists. refer to original android document. -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="0"/>
-        </service>
-        <receiver android:name=".example.CounterComplicationBroadcast"/>
+                android:value="1800"/>
 
+            <!-- To open Configuration activity, use this meta-data  -->
+            <meta-data
+                android:name="android.support.wearable.complications.PROVIDER_CONFIG_ACTION"
+                android:value="CRYPTO_CONFIG_CHOOSER_ACTION"/>
+        </service>
+        <activity android:name=".crypto.CryptoConfigurationActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="CRYPTO_CONFIG_CHOOSER_ACTION"/>
+                <category android:name="android.support.wearable.complications.category.PROVIDER_CONFIG"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <receiver android:name=".crypto.CryptoComplicationBroadcast"/>
 
         <service android:name=".textline.TextLineComplicationService"
             android:icon="@mipmap/ic_launcher"

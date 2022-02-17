@@ -20,7 +20,7 @@ class TextLineConfigurationActivity : Activity() {
     private var complicationId: Int = -1
 
     companion object {
-        val INTENT_FROM_CONFIGURATION = "com.artrointel.everyonescomplication.textline.TextLineConfigurationActivity";
+        const val INTENT_FROM_CONFIGURATION = "com.artrointel.everyonescomplication.textline.TextLineConfigurationActivity";
     }
 
     @Override
@@ -55,7 +55,6 @@ class TextLineConfigurationActivity : Activity() {
         try {
             selectedUnit = dao.reader().getInt(TextLinePayload.Key.INTERVAL_UNIT, 0)
             seconds = dao.reader().getLong(TextLinePayload.Key.INTERVAL, 0L)
-            Log.e("act", "interval read"+seconds.toString())
             when(selectedUnit) {
                 0 -> { // days
                     time = seconds / (3600*24L)
