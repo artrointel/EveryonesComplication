@@ -10,18 +10,18 @@ import com.artrointel.customcomplication.boundary.Payload
 import com.artrointel.everyonescomplication.crypto.model.CryptoConnection
 import com.artrointel.everyonescomplication.crypto.model.CryptoUserConfig
 
-class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payload) {
+class CryptoPayloadManager(context: Context, payload: Bundle) : Payload(context, payload) {
     companion object {
-        private val TAG = CryptoPayload::class.simpleName
+        private val TAG = CryptoPayloadManager::class.simpleName
         private const val PKG_PREFIX: String = "com.artrointel.everyonescomplication.textlinecomplication."
         private const val ACTION_CRYPTO_COMPLICATION = PKG_PREFIX + "action"
 
-        fun create(context: Context, dataSource: ComponentName, complicationId: Int, command: Command) : CryptoPayload {
+        fun create(context: Context, dataSource: ComponentName, complicationId: Int, command: Command) : CryptoPayloadManager {
             val payload = Bundle()
             payload.putParcelable(Extra.DATA_SOURCE, dataSource)
             payload.putInt(Extra.COMPLICATION_ID, complicationId)
             payload.putString(Extra.COMMAND, command.name)
-            return CryptoPayload(context, payload)
+            return CryptoPayloadManager(context, payload)
         }
 
         fun createIntentForBroadcastAction(context: Context, complicationId: Int, command: String) : Intent {
@@ -56,6 +56,8 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         }
     }
 
+    var onCryptoDataUpdated: Runnable? = null
+
     override fun handleByCommand() : Boolean{
         var needComplicationUpdated = false
 
@@ -68,6 +70,10 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
                 setCryptoConfig()
                 needComplicationUpdated = true
             }
+            Command.REQUEST_REFRESH.name -> {
+                queryCryptoData() // async update.
+                needComplicationUpdated = true
+            }
             else -> {
                 Log.e(TAG, "Unhandled Command!")
             }
@@ -77,14 +83,14 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         return needComplicationUpdated
     }
 
-    fun setNext(apply: Boolean = false) {
+    private fun setNext(apply: Boolean = false) {
         val idx : Int = accessor.reader().getInt(Key.CURRENT, 0)
         val size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
     }
 
-    fun queryCryptoData(onCryptoDataUpdated: Runnable) {
+    private fun queryCryptoData() {
         Log.d(TAG, "query to update Crypto Data.")
         val size = accessor.reader().getInt(Key.SIZE, 1)
         val key = accessor.reader().getString(Key.PRIVATE_KEY, "")
@@ -95,10 +101,7 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
             override fun onReceived(result: String) {
                 accessor.writer().putString(Key.CRYPTO_DATA, result)
                 accessor.writer().apply()
-            }
-
-            override fun run() {
-                onCryptoDataUpdated.run()
+                onCryptoDataUpdated?.run()
             }
         })
         conn.open()

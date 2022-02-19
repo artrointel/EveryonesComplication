@@ -1,6 +1,4 @@
 package com.artrointel.everyonescomplication.crypto.model
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import java.io.BufferedReader
 import java.net.HttpURLConnection
@@ -12,19 +10,24 @@ class CryptoConnection(
     private val onCryptoDataUpdated: OnCryptoDataReceived) {
 
     companion object {
-        val TAG = CryptoConnection::class.java.simpleName
+        const val TAG = "CryptoConnection"
     }
 
-    interface OnCryptoDataReceived: Runnable {
+    interface OnCryptoDataReceived {
+        /**
+         * Called in worker thread on data received.
+         * Use {}
+         */
         fun onReceived(result: String)
     }
 
-    class HTTPThread(private val onCryptoDataUpdated: OnCryptoDataReceived): Thread() {
+    class HTTPThread(private val onCryptoDataUpdated: OnCryptoDataReceived,
+                     private val numberOfTopInMarket: Int,
+                     private val privateKey: String): Thread() {
         override fun run() {
-            Log.d(TAG, "HTTP Connection start.")
+            Log.d(TAG, "HTTP Connection to CoinMarketCap is started.")
             val url = URL("https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?" +
-                    "start=1&limit=1" +
-                    "&convert=USD&CMC_PRO_API_KEY=a00ddd82-efa6-4d34-8707-8eb241b81feb")
+                    "start=1&limit=$numberOfTopInMarket&convert=USD&CMC_PRO_API_KEY=$privateKey")
             val urlConn = url.openConnection()
             val httpConn = urlConn as HttpURLConnection
             httpConn.requestMethod = "GET"
@@ -37,7 +40,6 @@ class CryptoConnection(
                 val result = httpConn.inputStream.bufferedReader().use(BufferedReader::readText)
                 Log.d(TAG, "Received data: $result")
                 onCryptoDataUpdated.onReceived(result)
-                Handler(Looper.getMainLooper()).post(onCryptoDataUpdated)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -45,7 +47,7 @@ class CryptoConnection(
     }
 
     fun open() {
-        val thread = HTTPThread(onCryptoDataUpdated)
+        val thread = HTTPThread(onCryptoDataUpdated, numberOfTopInMarket, privateKey)
         thread.start()
     }
 }

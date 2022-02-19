@@ -1,7 +1,14 @@
 package com.artrointel.everyonescomplication.crypto
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.ComponentName
+import android.content.Context
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
 import androidx.wear.watchface.complications.datasource.ComplicationDataSourceService
@@ -9,15 +16,24 @@ import androidx.wear.watchface.complications.datasource.ComplicationRequest
 import com.artrointel.customcomplication.boundary.Payload
 import com.artrointel.customcomplication.utils.ComplicationDataCreator
 import com.artrointel.everyonescomplication.R
+import com.artrointel.everyonescomplication.crypto.model.CryptoInfo
 import com.artrointel.everyonescomplication.crypto.model.CryptoParser
 import com.artrointel.everyonescomplication.utils.IconCreator
 import java.lang.Exception
+import kotlin.math.abs
+import android.os.Vibrator
+
+
+
 
 class CryptoComplicationService : ComplicationDataSourceService() {
-    private val TAG = CryptoComplicationService::class.simpleName
+    private val TAG = "CryptoComplicationService"
+
+    private val notificationChannelId = "CryptoCurrencyPriceChangeNotification"
 
     private var complicationDataLatest: ComplicationData? = null
-    private var cryptoPayload: CryptoPayload? = null
+    private var cryptoPayloadManager: CryptoPayloadManager? = null
+    private var cryptoInfoLatest: CryptoInfo? = null
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
         var complicationDataPreview : ComplicationData? = null
@@ -37,7 +53,7 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
     override fun onComplicationActivated(complicationInstanceId: Int, type: ComplicationType) {
         Log.d(TAG, "onComplicationActivated id:$complicationInstanceId, Type:$type")
-
+        createNotificationChannel()
     }
 
     override fun onComplicationRequest(
@@ -48,12 +64,13 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
         val dataSource = ComponentName(this, CryptoComplicationService::class.java)
 
-        cryptoPayload = CryptoPayload.create(this, dataSource, request.complicationInstanceId, CryptoPayload.Command.NONE)
+        cryptoPayloadManager = CryptoPayloadManager.create(this, dataSource, request.complicationInstanceId, CryptoPayloadManager.Command.NONE)
 
         when(request.complicationType){
             ComplicationType.SHORT_TEXT -> {
                 try {
-                    complicationDataLatest = createShortTextLineComplicationData(request, dataSource)
+                    onCryptoUpdateRequest()
+                    complicationDataLatest = createShortTextComplicationData(request, dataSource)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -65,31 +82,83 @@ class CryptoComplicationService : ComplicationDataSourceService() {
         listener.onComplicationData(complicationDataLatest)
     }
 
-    private fun createShortTextLineComplicationData(
+    private fun onCryptoUpdateRequest() {
+        cryptoInfoLatest = getCurrentCryptoInfo()
+        val changePerHour = cryptoInfoLatest!!.percent_change_1h * 100.0f
+        val changePerDay = cryptoInfoLatest!!.percent_change_24h * 100.0f
+
+        // Make notification if needed
+        if(cryptoPayloadManager!!.getCryptoConfig().notiEnabled) {
+            // TODO get system time whether it's daylight or not
+            if(abs(cryptoInfoLatest!!.percent_change_1h) * 100.0f > cryptoPayloadManager!!.getCryptoConfig().notiOnChange) {
+                makeNotification("Price Changed Notification for " +
+                        cryptoInfoLatest!!.symbol + ": " + cryptoInfoLatest!!.price +
+                        String.format(", %.1f/h and %.1f/d", changePerHour, changePerDay) + "%")
+            }
+        }
+        Toast.makeText(this, String.format("%.2f/h, %.2f/d", changePerHour, changePerDay) , Toast.LENGTH_LONG).show()
+        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        val vibrationPattern = longArrayOf(0, 300, 100, 300, 100)
+        val indexInPatternToRepeat = -1
+        vibrator.vibrate(vibrationPattern, indexInPatternToRepeat)
+    }
+
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = notificationChannelId
+            val descriptionText = "Crypto Currency Price Change Notification"
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(notificationChannelId, name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun makeNotification(desc: String) {
+        var builder = NotificationCompat.Builder(this, notificationChannelId)
+        .setSmallIcon(R.drawable.crypto_btc)
+        .setContentTitle(notificationChannelId)
+        .setContentText(desc)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        NotificationManagerCompat.from(this).apply {
+                // notificationId is a unique int for each notification that you must define
+                notify(1, builder.build())
+        }
+    }
+
+    private fun createShortTextComplicationData(
         request: ComplicationRequest, dataSource: ComponentName)
             : ComplicationData {
 
-        val jsonData = cryptoPayload!!.getCryptoData()
-        if(jsonData == null || jsonData == "") {
-            Log.d(TAG, "Failed to get crypto data.")
-        } else {
-            Log.d(TAG, "JSON Data: $jsonData")
-        }
-
-        val cryptoInfo = CryptoParser()
-
-            .load(jsonData)
-            //.load("{\"status\":{\"timestamp\":\"2022-02-17T11:48:11.141Z\",\"error_code\":0,\"error_message\":null,\"elapsed\":18,\"credit_count\":1,\"notice\":null,\"total_count\":9412},\"data\":[{\"id\":1,\"name\":\"Bitcoin\",\"symbol\":\"BTC\",\"slug\":\"bitcoin\",\"num_market_pairs\":9160,\"date_added\":\"2013-04-28T00:00:00.000Z\",\"tags\":[\"mineable\",\"pow\",\"sha-256\",\"store-of-value\",\"state-channel\",\"coinbase-ventures-portfolio\",\"three-arrows-capital-portfolio\",\"polychain-capital-portfolio\",\"binance-labs-portfolio\",\"blockchain-capital-portfolio\",\"boostvc-portfolio\",\"cms-holdings-portfolio\",\"dcg-portfolio\",\"dragonfly-capital-portfolio\",\"electric-capital-portfolio\",\"fabric-ventures-portfolio\",\"framework-ventures-portfolio\",\"galaxy-digital-portfolio\",\"huobi-capital-portfolio\",\"alameda-research-portfolio\",\"a16z-portfolio\",\"1confirmation-portfolio\",\"winklevoss-capital-portfolio\",\"usv-portfolio\",\"placeholder-ventures-portfolio\",\"pantera-capital-portfolio\",\"multicoin-capital-portfolio\",\"paradigm-portfolio\"],\"max_supply\":21000000,\"circulating_supply\":18960850,\"total_supply\":18960850,\"platform\":null,\"cmc_rank\":1,\"self_reported_circulating_supply\":null,\"self_reported_market_cap\":null,\"last_updated\":\"2022-02-17T11:46:00.000Z\",\"quote\":{\"USD\":{\"price\":43138.55279718401,\"volume_24h\":21767064502.26856,\"volume_change_24h\":5.1901,\"percent_change_1h\":-0.15706312,\"percent_change_24h\":-2.37666928,\"percent_change_7d\":-4.22351048,\"percent_change_30d\":3.23593778,\"percent_change_60d\":-8.6644874,\"percent_change_90d\":-24.19854014,\"market_cap\":817943628804.4865,\"market_cap_dominance\":42.0066,\"fully_diluted_market_cap\":905909608740.86,\"last_updated\":\"2022-02-17T11:46:00.000Z\"}}}]}")
-            .cryptoInfoList[cryptoPayload!!.accessor.reader().getInt(CryptoPayload.Key.CURRENT, 0)]
-
-        // intent for tapAction with the Complication Data. it would show next text-line on tap action
+        // intent for tapAction with the Complication Data.
         val intent = Payload.createPendingIntent(
             CryptoComplicationBroadcast::class.java,
             this,
-            dataSource, request.complicationInstanceId, CryptoPayload.Command.SET_NEXT.name)
+            dataSource, request.complicationInstanceId, CryptoPayloadManager.Command.REQUEST_REFRESH.name)
 
         return ComplicationDataCreator.shortText(
             IconCreator.createFromBase64(resources.getString(R.string.crypto_short_text_icon)), // TODO icon
-            cryptoInfo.symbol, cryptoInfo.price.toString(), "description?", intent)
+            cryptoInfoLatest!!.symbol,
+            cryptoInfoLatest!!.price.toInt().toString(),
+            " (" + String.format("%.1f",cryptoInfoLatest!!.percent_change_24h) + ")", intent)
+    }
+
+    private fun getCurrentCryptoInfo(): CryptoInfo {
+        val jsonData = cryptoPayloadManager!!.getCryptoData()
+        if(jsonData == "") {
+            Toast.makeText(this, "Failed to get crypto data. Check your Private Key.", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Failed to get crypto data.")
+        }
+
+        return CryptoParser()
+            .load(jsonData)
+            .cryptoInfoList[cryptoPayloadManager!!.accessor.reader().getInt(CryptoPayloadManager.Key.CURRENT, 0)]
     }
 }

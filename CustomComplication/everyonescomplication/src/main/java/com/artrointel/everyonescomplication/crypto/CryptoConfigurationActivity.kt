@@ -21,7 +21,7 @@ class CryptoConfigurationActivity : Activity() {
     @Override
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        registerReceiver(receiver, CryptoPayload.getIntentFilter())
+        registerReceiver(receiver, CryptoPayloadManager.getIntentFilter())
         complicationId = intent.getIntExtra(ComplicationDataSourceService.EXTRA_CONFIG_COMPLICATION_ID, -1)
         Log.d(TAG, "Configuration Opened with id: $complicationId")
 
@@ -40,10 +40,10 @@ class CryptoConfigurationActivity : Activity() {
         val dao = SharedPreferenceDAO(this)
 
         // TODO bind data top x, alarm data
-        configurationsBinding.cryptoMarketTopText.setText(dao.reader().getInt(CryptoPayload.Key.SIZE, 1).toString())
-        configurationsBinding.cryptoNotiSwitch.isChecked = dao.reader().getBoolean(CryptoPayload.Key.NOTI_ENABLED, false)
-        configurationsBinding.cryptoChangeForNoti.setText(dao.reader().getFloat(CryptoPayload.Key.NOTI_ON_CHANGE, 0.0f).toString())
-        configurationsBinding.cryptoPrivateKey.setText(dao.reader().getString(CryptoPayload.Key.PRIVATE_KEY, ""))
+        configurationsBinding.cryptoMarketTopText.setText(dao.reader().getInt(CryptoPayloadManager.Key.SIZE, 1).toString())
+        configurationsBinding.cryptoNotiSwitch.isChecked = dao.reader().getBoolean(CryptoPayloadManager.Key.NOTI_ENABLED, false)
+        configurationsBinding.cryptoChangeForNoti.setText(dao.reader().getFloat(CryptoPayloadManager.Key.NOTI_ON_CHANGE, 0.0f).toString())
+        configurationsBinding.cryptoPrivateKey.setText(dao.reader().getString(CryptoPayloadManager.Key.PRIVATE_KEY, ""))
 
         configurationsBinding.buttonApply.setOnClickListener {
             applyChanges()
@@ -55,7 +55,7 @@ class CryptoConfigurationActivity : Activity() {
     }
 
     private fun applyChanges() {
-        var intent = CryptoPayload.createIntentForBroadcastAction(this, complicationId, CryptoPayload.Command.SET_CONFIG.name)
+        var intent = CryptoPayloadManager.createIntentForBroadcastAction(this, complicationId, CryptoPayloadManager.Command.SET_CONFIG.name)
         intent.putExtra(INTENT_FROM_CONFIGURATION, true)
 
         val numberOfTopCoins = configurationsBinding.cryptoMarketTopText.text.toString().toInt()
@@ -65,10 +65,10 @@ class CryptoConfigurationActivity : Activity() {
 
         // TODO check whether the private key is valid or not.
 
-        intent.putExtra(CryptoPayload.Key.SIZE, numberOfTopCoins)
-        intent.putExtra(CryptoPayload.Key.NOTI_ENABLED, notificationEnabled)
-        intent.putExtra(CryptoPayload.Key.NOTI_ON_CHANGE, changeForNoti)
-        intent.putExtra(CryptoPayload.Key.PRIVATE_KEY, privateKey)
+        intent.putExtra(CryptoPayloadManager.Key.SIZE, numberOfTopCoins)
+        intent.putExtra(CryptoPayloadManager.Key.NOTI_ENABLED, notificationEnabled)
+        intent.putExtra(CryptoPayloadManager.Key.NOTI_ON_CHANGE, changeForNoti)
+        intent.putExtra(CryptoPayloadManager.Key.PRIVATE_KEY, privateKey)
 
         sendBroadcast(intent)
         setResult(RESULT_OK)

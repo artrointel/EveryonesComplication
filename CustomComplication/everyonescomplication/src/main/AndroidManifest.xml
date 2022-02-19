@@ -3,6 +3,7 @@
     package="com.artrointel.everyonescomplication">
 
     <uses-feature android:name="android.hardware.type.watch" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
@@ -37,7 +38,7 @@
             <!-- SYNCHROUNOUS_UPDATE_PERIOD_MILLISECONDS also exists. refer to original android document. -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="1800"/>
+                android:value="3600"/>
 
             <!-- To open Configuration activity, use this meta-data  -->
             <meta-data
