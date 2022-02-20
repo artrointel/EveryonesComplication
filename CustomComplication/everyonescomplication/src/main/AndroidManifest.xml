@@ -3,6 +3,7 @@
     package="com.artrointel.everyonescomplication">
 
     <uses-feature android:name="android.hardware.type.watch" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
@@ -31,13 +32,13 @@
             See ComplicationType class for the support. -->
             <meta-data
                 android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT"/>
+                android:value="LONG_TEXT, SHORT_TEXT"/>
 
             <!-- The number of seconds of complication update request. 0 means never update by the time. -->
             <!-- SYNCHROUNOUS_UPDATE_PERIOD_MILLISECONDS also exists. refer to original android document. -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
-                android:value="1800"/>
+                android:value="3600"/>
 
             <!-- To open Configuration activity, use this meta-data  -->
             <meta-data

@@ -56,6 +56,8 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         }
     }
 
+    var onCryptoDataUpdated: Runnable? = null
+
     override fun handleByCommand() : Boolean{
         var needComplicationUpdated = false
 
@@ -66,6 +68,11 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
             }
             Command.SET_CONFIG.name -> {
                 setCryptoConfig()
+                queryCryptoData()
+                needComplicationUpdated = true
+            }
+            Command.REQUEST_REFRESH.name -> {
+                queryCryptoData() // async update.
                 needComplicationUpdated = true
             }
             else -> {
@@ -77,14 +84,14 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         return needComplicationUpdated
     }
 
-    fun setNext(apply: Boolean = false) {
+    private fun setNext(apply: Boolean = false) {
         val idx : Int = accessor.reader().getInt(Key.CURRENT, 0)
         val size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
     }
 
-    fun queryCryptoData(onCryptoDataUpdated: Runnable) {
+    private fun queryCryptoData() {
         Log.d(TAG, "query to update Crypto Data.")
         val size = accessor.reader().getInt(Key.SIZE, 1)
         val key = accessor.reader().getString(Key.PRIVATE_KEY, "")
@@ -95,10 +102,7 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
             override fun onReceived(result: String) {
                 accessor.writer().putString(Key.CRYPTO_DATA, result)
                 accessor.writer().apply()
-            }
-
-            override fun run() {
-                onCryptoDataUpdated.run()
+                onCryptoDataUpdated?.run()
             }
         })
         conn.open()
