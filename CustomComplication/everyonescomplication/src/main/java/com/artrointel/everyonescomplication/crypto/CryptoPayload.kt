@@ -10,18 +10,18 @@ import com.artrointel.customcomplication.boundary.Payload
 import com.artrointel.everyonescomplication.crypto.model.CryptoConnection
 import com.artrointel.everyonescomplication.crypto.model.CryptoUserConfig
 
-class CryptoPayloadManager(context: Context, payload: Bundle) : Payload(context, payload) {
+class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payload) {
     companion object {
-        private val TAG = CryptoPayloadManager::class.simpleName
+        private val TAG = CryptoPayload::class.simpleName
         private const val PKG_PREFIX: String = "com.artrointel.everyonescomplication.textlinecomplication."
         private const val ACTION_CRYPTO_COMPLICATION = PKG_PREFIX + "action"
 
-        fun create(context: Context, dataSource: ComponentName, complicationId: Int, command: Command) : CryptoPayloadManager {
+        fun create(context: Context, dataSource: ComponentName, complicationId: Int, command: Command) : CryptoPayload {
             val payload = Bundle()
             payload.putParcelable(Extra.DATA_SOURCE, dataSource)
             payload.putInt(Extra.COMPLICATION_ID, complicationId)
             payload.putString(Extra.COMMAND, command.name)
-            return CryptoPayloadManager(context, payload)
+            return CryptoPayload(context, payload)
         }
 
         fun createIntentForBroadcastAction(context: Context, complicationId: Int, command: String) : Intent {
@@ -68,6 +68,7 @@ class CryptoPayloadManager(context: Context, payload: Bundle) : Payload(context,
             }
             Command.SET_CONFIG.name -> {
                 setCryptoConfig()
+                queryCryptoData()
                 needComplicationUpdated = true
             }
             Command.REQUEST_REFRESH.name -> {

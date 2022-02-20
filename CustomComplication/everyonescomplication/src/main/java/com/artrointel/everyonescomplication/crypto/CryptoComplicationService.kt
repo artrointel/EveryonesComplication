@@ -28,11 +28,10 @@ import android.os.Vibrator
 
 class CryptoComplicationService : ComplicationDataSourceService() {
     private val TAG = "CryptoComplicationService"
-
     private val notificationChannelId = "CryptoCurrencyPriceChangeNotification"
 
     private var complicationDataLatest: ComplicationData? = null
-    private var cryptoPayloadManager: CryptoPayloadManager? = null
+    private var cryptoPayload: CryptoPayload? = null
     private var cryptoInfoLatest: CryptoInfo? = null
 
     override fun getPreviewData(type: ComplicationType): ComplicationData? {
@@ -43,6 +42,12 @@ class CryptoComplicationService : ComplicationDataSourceService() {
                     IconCreator.createFromBase64(resources.getString(R.string.crypto_short_text_icon)),
                     resources.getString(R.string.crypto_short_text_title),
                     resources.getString(R.string.crypto_short_text_text))
+            }
+            ComplicationType.LONG_TEXT -> {
+                complicationDataPreview = ComplicationDataCreator.longText(
+                    IconCreator.createFromBase64(resources.getString(R.string.crypto_short_text_icon)),
+                    resources.getString(R.string.crypto_long_text_title),
+                    resources.getString(R.string.crypto_long_text_text))
             }
             else -> {
                 Log.e(TAG, "Unsupported ComplicationType: $type")
@@ -64,43 +69,46 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
         val dataSource = ComponentName(this, CryptoComplicationService::class.java)
 
-        cryptoPayloadManager = CryptoPayloadManager.create(this, dataSource, request.complicationInstanceId, CryptoPayloadManager.Command.NONE)
+        cryptoPayload = CryptoPayload.create(this, dataSource, request.complicationInstanceId, CryptoPayload.Command.NONE)
 
-        when(request.complicationType){
-            ComplicationType.SHORT_TEXT -> {
-                try {
-                    onCryptoUpdateRequest()
+        try {
+            onCryptoUpdateRequest()
+            when(request.complicationType) {
+                ComplicationType.SHORT_TEXT -> {
                     complicationDataLatest = createShortTextComplicationData(request, dataSource)
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                }
+                ComplicationType.LONG_TEXT -> {
+                    complicationDataLatest = createLongTextComplicationData(request, dataSource)
+                }
+                else -> {
+                    Log.e(TAG, "Unsupported ComplicationType: ${request.complicationType}")
                 }
             }
-            else -> {
-                Log.e(TAG, "Unsupported ComplicationType: ${request.complicationType}")
-            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
         listener.onComplicationData(complicationDataLatest)
     }
 
+    // Update latest data and makes Notification, Toast and Vibration if needed.
     private fun onCryptoUpdateRequest() {
         cryptoInfoLatest = getCurrentCryptoInfo()
-        val changePerHour = cryptoInfoLatest!!.percent_change_1h * 100.0f
-        val changePerDay = cryptoInfoLatest!!.percent_change_24h * 100.0f
+        val changePerHour = cryptoInfoLatest!!.percent_change_1h
+        val changePerDay = cryptoInfoLatest!!.percent_change_24h
 
         // Make notification if needed
-        if(cryptoPayloadManager!!.getCryptoConfig().notiEnabled) {
+        if(cryptoPayload!!.getCryptoConfig().notiEnabled) {
             // TODO get system time whether it's daylight or not
-            if(abs(cryptoInfoLatest!!.percent_change_1h) * 100.0f > cryptoPayloadManager!!.getCryptoConfig().notiOnChange) {
+            if(abs(cryptoInfoLatest!!.percent_change_1h) > cryptoPayload!!.getCryptoConfig().notiOnChange) {
                 makeNotification("Price Changed Notification for " +
                         cryptoInfoLatest!!.symbol + ": " + cryptoInfoLatest!!.price +
                         String.format(", %.1f/h and %.1f/d", changePerHour, changePerDay) + "%")
+
+                makeVibration()
             }
         }
-        Toast.makeText(this, String.format("%.2f/h, %.2f/d", changePerHour, changePerDay) , Toast.LENGTH_LONG).show()
-        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
-        val vibrationPattern = longArrayOf(0, 300, 100, 300, 100)
-        val indexInPatternToRepeat = -1
-        vibrator.vibrate(vibrationPattern, indexInPatternToRepeat)
+        Toast.makeText(this, getCurrentPriceChangeString(), Toast.LENGTH_LONG).show()
     }
 
     private fun createNotificationChannel() {
@@ -118,6 +126,13 @@ class CryptoComplicationService : ComplicationDataSourceService() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    private fun makeVibration() {
+        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        val vibrationPattern = longArrayOf(0, 300, 100, 300, 100)
+        val indexInPatternToRepeat = -1
+        vibrator.vibrate(vibrationPattern, indexInPatternToRepeat)
     }
 
     private fun makeNotification(desc: String) {
@@ -141,7 +156,7 @@ class CryptoComplicationService : ComplicationDataSourceService() {
         val intent = Payload.createPendingIntent(
             CryptoComplicationBroadcast::class.java,
             this,
-            dataSource, request.complicationInstanceId, CryptoPayloadManager.Command.REQUEST_REFRESH.name)
+            dataSource, request.complicationInstanceId, CryptoPayload.Command.REQUEST_REFRESH.name)
 
         return ComplicationDataCreator.shortText(
             IconCreator.createFromBase64(resources.getString(R.string.crypto_short_text_icon)), // TODO icon
@@ -150,8 +165,25 @@ class CryptoComplicationService : ComplicationDataSourceService() {
             " (" + String.format("%.1f",cryptoInfoLatest!!.percent_change_24h) + ")", intent)
     }
 
+    private fun createLongTextComplicationData(
+        request: ComplicationRequest, dataSource: ComponentName)
+            : ComplicationData {
+
+        // intent for tapAction with the Complication Data.
+        val intent = Payload.createPendingIntent(
+            CryptoComplicationBroadcast::class.java,
+            this,
+            dataSource, request.complicationInstanceId, CryptoPayload.Command.REQUEST_REFRESH.name)
+
+        return ComplicationDataCreator.longText(
+            IconCreator.createFromBase64(resources.getString(R.string.crypto_short_text_icon)), // TODO icon
+            cryptoInfoLatest!!.symbol + " " + cryptoInfoLatest!!.price.toInt().toString(),
+            text = getCurrentPriceChangeString(),
+            " (" + String.format("%.1f",cryptoInfoLatest!!.percent_change_24h) + ")", intent)
+    }
+
     private fun getCurrentCryptoInfo(): CryptoInfo {
-        val jsonData = cryptoPayloadManager!!.getCryptoData()
+        val jsonData = cryptoPayload!!.getCryptoData()
         if(jsonData == "") {
             Toast.makeText(this, "Failed to get crypto data. Check your Private Key.", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "Failed to get crypto data.")
@@ -159,6 +191,12 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
         return CryptoParser()
             .load(jsonData)
-            .cryptoInfoList[cryptoPayloadManager!!.accessor.reader().getInt(CryptoPayloadManager.Key.CURRENT, 0)]
+            .cryptoInfoList[cryptoPayload!!.accessor.reader().getInt(CryptoPayload.Key.CURRENT, 0)]
+    }
+
+    private fun getCurrentPriceChangeString(): String {
+        val changePerHour = cryptoInfoLatest!!.percent_change_1h
+        val changePerDay = cryptoInfoLatest!!.percent_change_24h
+        return String.format("%.2f/h, %.2f/d", changePerHour, changePerDay)
     }
 }

@@ -9,23 +9,23 @@ import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUp
 class CryptoComplicationBroadcast : BroadcastReceiver() {
     private val TAG = "CryptoComplicationBroadcast"
 
-    private var payloadManager: CryptoPayloadManager? = null
+    private var payload: CryptoPayload? = null
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if(payloadManager == null) {
-            payloadManager = CryptoPayloadManager(context!!, intent?.extras!!)
-            payloadManager!!.onCryptoDataUpdated = Runnable {
+        if(payload == null) {
+            payload = CryptoPayload(context!!, intent?.extras!!)
+            payload!!.onCryptoDataUpdated = Runnable {
                 val updateRequester =
                     ComplicationDataSourceUpdateRequester.create(
                         context!!,
-                        payloadManager!!.dataSource!!
+                        payload!!.dataSource!!
                     )
-                updateRequester.requestUpdate(payloadManager!!.complicationId)
-                Log.d(TAG, "complicationId(${payloadManager!!.complicationId}) update requested")
+                updateRequester.requestUpdate(payload!!.complicationId)
+                Log.d(TAG, "complicationId(${payload!!.complicationId}) update requested")
             }
         }
-        Log.d(TAG, "onReceived from complicationId(${payloadManager!!.complicationId})")
+        Log.d(TAG, "onReceived from complicationId(${payload!!.complicationId})")
 
-        payloadManager?.handleByCommand()
+        payload?.handleByCommand()
     }
 }

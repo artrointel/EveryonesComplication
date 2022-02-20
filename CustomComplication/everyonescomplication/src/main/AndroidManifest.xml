@@ -32,7 +32,7 @@
             See ComplicationType class for the support. -->
             <meta-data
                 android:name="android.support.wearable.complications.SUPPORTED_TYPES"
-                android:value="SHORT_TEXT"/>
+                android:value="LONG_TEXT, SHORT_TEXT"/>
 
             <!-- The number of seconds of complication update request. 0 means never update by the time. -->
             <!-- SYNCHROUNOUS_UPDATE_PERIOD_MILLISECONDS also exists. refer to original android document. -->
