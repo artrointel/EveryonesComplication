@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
+import android.icu.text.SimpleDateFormat
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -22,13 +23,12 @@ import com.artrointel.everyonescomplication.utils.IconCreator
 import java.lang.Exception
 import kotlin.math.abs
 import android.os.Vibrator
-
-
+import java.util.*
 
 
 class CryptoComplicationService : ComplicationDataSourceService() {
     private val TAG = "CryptoComplicationService"
-    private val notificationChannelId = "CryptoCurrencyPriceChangeNotification"
+    private val notificationChannelId = "BTC Price Changed"
 
     private var complicationDataLatest: ComplicationData? = null
     private var cryptoPayload: CryptoPayload? = null
@@ -99,16 +99,20 @@ class CryptoComplicationService : ComplicationDataSourceService() {
 
         // Make notification if needed
         if(cryptoPayload!!.getCryptoConfig().notiEnabled) {
-            // TODO get system time whether it's daylight or not
-            if(abs(cryptoInfoLatest!!.percent_change_1h) > cryptoPayload!!.getCryptoConfig().notiOnChange) {
-                makeNotification("Price Changed Notification for " +
-                        cryptoInfoLatest!!.symbol + ": " + cryptoInfoLatest!!.price +
-                        String.format(", %.1f/h and %.1f/d", changePerHour, changePerDay) + "%")
+            val hour = String.format(SimpleDateFormat("HH").format(Calendar.getInstance().time)).toInt()
+            if(hour !in 0..6) { // do not wake user up at the midnight.
+                if(abs(cryptoInfoLatest!!.percent_change_1h) > cryptoPayload!!.getCryptoConfig().notiOnChange) {
+                    makeNotification(String.format(SimpleDateFormat("HH:MM:SS").format(Calendar.getInstance().time)) +
+                            "\nPrice Changed Notification for\n" +
+                            cryptoInfoLatest!!.symbol + ": " + cryptoInfoLatest!!.price +
+                            String.format("\n%.1f%%/h and %.1f%%/d", changePerHour, changePerDay))
 
-                makeVibration()
+                    makeVibration()
+                }
             }
+
         }
-        Toast.makeText(this, getCurrentPriceChangeString(), Toast.LENGTH_LONG).show()
+        Toast.makeText(this, getCurrentPriceChangeString(true), Toast.LENGTH_LONG).show()
     }
 
     private fun createNotificationChannel() {
@@ -194,9 +198,9 @@ class CryptoComplicationService : ComplicationDataSourceService() {
             .cryptoInfoList[cryptoPayload!!.accessor.reader().getInt(CryptoPayload.Key.CURRENT, 0)]
     }
 
-    private fun getCurrentPriceChangeString(): String {
+    private fun getCurrentPriceChangeString(newLine: Boolean = false): String {
         val changePerHour = cryptoInfoLatest!!.percent_change_1h
         val changePerDay = cryptoInfoLatest!!.percent_change_24h
-        return String.format("%.2f/h, %.2f/d", changePerHour, changePerDay)
+        return String.format("%.2f%%/h${if(newLine) "\n"; else {", "}}%.2f%%/d", changePerHour, changePerDay)
     }
 }

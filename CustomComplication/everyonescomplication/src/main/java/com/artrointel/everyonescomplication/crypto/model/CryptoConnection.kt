@@ -16,7 +16,6 @@ class CryptoConnection(
     interface OnCryptoDataReceived {
         /**
          * Called in worker thread on data received.
-         * Use {}
          */
         fun onReceived(result: String)
     }
