@@ -20,7 +20,7 @@
 
         <service android:name=".crypto.CryptoComplicationService"
             android:icon="@drawable/crypto_btc"
-            android:label="Crypto Currency Data"
+            android:label="BitFace"
             android:exported="true"
             android:permission="com.google.android.wearable.permission.BIND_COMPLICATION_PROVIDER">
             <intent-filter>
@@ -55,6 +55,7 @@
         </activity>
         <receiver android:name=".crypto.CryptoComplicationBroadcast"/>
 
+        <!--
         <service android:name=".textline.TextLineComplicationService"
             android:icon="@mipmap/ic_launcher"
             android:label="Long Text Complication"
@@ -64,20 +65,14 @@
                 <action android:name="android.support.wearable.complications.ACTION_COMPLICATION_UPDATE_REQUEST"/>
             </intent-filter>
 
-
-            <!-- DECL. OF COMPLICATION DATA TYPE.
-            See ComplicationType class for the support. -->
             <meta-data
                 android:name="android.support.wearable.complications.SUPPORTED_TYPES"
                 android:value="LONG_TEXT, SHORT_TEXT"/>
 
-            <!-- The number of seconds of complication update request. 0 means never update by the time. -->
-            <!-- SYNCHROUNOUS_UPDATE_PERIOD_MILLISECONDS also exists. refer to original android document. -->
             <meta-data
                 android:name="android.support.wearable.complications.UPDATE_PERIOD_SECONDS"
                 android:value="0"/>
 
-            <!-- To open Configuration activity, use this meta-data  -->
             <meta-data
                 android:name="android.support.wearable.complications.PROVIDER_CONFIG_ACTION"
                 android:value="TEXTLINE_CONFIG_CHOOSER_ACTION"/>
@@ -91,7 +86,7 @@
             </intent-filter>
         </activity>
         <receiver android:name=".textline.TextLineComplicationBroadcast"/>
-
+        -->
     </application>
 
 </manifest>

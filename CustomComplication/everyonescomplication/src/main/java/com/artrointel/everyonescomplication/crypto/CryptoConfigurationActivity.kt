@@ -15,7 +15,7 @@ class CryptoConfigurationActivity : Activity() {
     private var complicationId: Int = -1
 
     companion object {
-        val INTENT_FROM_CONFIGURATION = "com.artrointel.everyonescomplication.textline.CryptoConfigurationActivity";
+        val INTENT_FROM_CONFIGURATION = "com.artrointel.everyonescomplication.crypto.CryptoConfigurationActivity";
     }
 
     @Override
@@ -61,9 +61,7 @@ class CryptoConfigurationActivity : Activity() {
         val numberOfTopCoins = configurationsBinding.cryptoMarketTopText.text.toString().toInt()
         val notificationEnabled = configurationsBinding.cryptoNotiSwitch.isChecked
         val changeForNoti = configurationsBinding.cryptoChangeForNoti.text.toString().toFloat()
-        val privateKey = configurationsBinding.cryptoPrivateKey.text.toString()
-
-        // TODO check whether the private key is valid or not.
+        val privateKey = configurationsBinding.cryptoPrivateKey.text.toString().replace(" ", "");
 
         intent.putExtra(CryptoPayload.Key.SIZE, numberOfTopCoins)
         intent.putExtra(CryptoPayload.Key.NOTI_ENABLED, notificationEnabled)
