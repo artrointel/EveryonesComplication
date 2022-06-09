@@ -79,7 +79,6 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
                 Log.e(TAG, "Unhandled Command!")
             }
         }
-        accessor.writer().apply()
 
         return needComplicationUpdated
     }
@@ -89,23 +88,24 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         val size : Int = accessor.reader().getInt(Key.SIZE, 1) // modulo always to be 0 if size is 1
 
         accessor.writer().putInt(Key.CURRENT, (idx + 1) % size)
+        accessor.writer().apply()
     }
 
     private fun queryCryptoData() {
         Log.d(TAG, "query to update Crypto Data.")
-        val size = accessor.reader().getInt(Key.SIZE, 1)
+        val size = accessor.reader().getInt(Key.SIZE, 1) // Currently BTC Only. 1 is set.
         val key = accessor.reader().getString(Key.PRIVATE_KEY, "")
 
-        Thread.currentThread()
-
-        val conn = CryptoConnection(size, key!!, object: CryptoConnection.OnCryptoDataReceived {
-            override fun onReceived(result: String) {
-                accessor.writer().putString(Key.CRYPTO_DATA, result)
-                accessor.writer().apply()
-                onCryptoDataUpdated?.run()
-            }
-        })
-        conn.open()
+        if(!key.equals("")) {
+            val conn = CryptoConnection(size, key!!, object: CryptoConnection.OnCryptoDataReceived {
+                override fun onReceived(result: String) {
+                    accessor.writer().putString(Key.CRYPTO_DATA, result)
+                    accessor.writer().apply()
+                    onCryptoDataUpdated?.run()
+                }
+            })
+            conn.open()
+        }
     }
 
     fun getCryptoConfig(): CryptoUserConfig {
@@ -134,6 +134,8 @@ class CryptoPayload(context: Context, payload: Bundle) : Payload(context, payloa
         // Private Key
         val privateKey = extras.getString(Key.PRIVATE_KEY, "")
         accessor.writer().putString(Key.PRIVATE_KEY, privateKey)
+
+        accessor.writer().apply()
     }
 
     fun getCryptoData() : String {

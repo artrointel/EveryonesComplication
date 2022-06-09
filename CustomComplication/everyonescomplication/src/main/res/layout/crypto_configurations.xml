@@ -90,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:textSize="8dp"
-                android:hint="Visit https://coinmarketcap.com/api/"
+                android:hint="Visit coinmarketcap.com/api"
                 android:text=""/>
         </LinearLayout>
         <LinearLayout
