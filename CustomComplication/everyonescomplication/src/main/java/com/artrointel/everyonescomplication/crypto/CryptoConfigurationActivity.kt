@@ -42,8 +42,8 @@ class CryptoConfigurationActivity : Activity() {
         // TODO bind data top x, alarm data
         configurationsBinding.cryptoMarketTopText.setText(dao.reader().getInt(CryptoPayload.Key.SIZE, 1).toString())
         configurationsBinding.cryptoNotiSwitch.isChecked = dao.reader().getBoolean(CryptoPayload.Key.NOTI_ENABLED, false)
-        configurationsBinding.cryptoChangeForNoti.setText(dao.reader().getFloat(CryptoPayload.Key.NOTI_ON_CHANGE, 0.0f).toString())
-        configurationsBinding.cryptoPrivateKey.setText(dao.reader().getString(CryptoPayload.Key.PRIVATE_KEY, ""))
+        configurationsBinding.cryptoChangeForNoti.setText(dao.reader().getFloat(CryptoPayload.Key.NOTI_ON_CHANGE, 2.0f).toString())
+        configurationsBinding.cryptoPrivateKey.setText(dao.reader().getString(CryptoPayload.Key.PRIVATE_KEY, "a00ddd82-efa6-4d34-8707-8eb241b81feb"))
 
         configurationsBinding.buttonApply.setOnClickListener {
             applyChanges()

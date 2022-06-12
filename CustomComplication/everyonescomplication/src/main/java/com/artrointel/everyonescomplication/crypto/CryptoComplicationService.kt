@@ -189,8 +189,8 @@ class CryptoComplicationService : ComplicationDataSourceService() {
     private fun getCurrentCryptoInfo(): CryptoInfo {
         val jsonData = cryptoPayload!!.getCryptoData()
         if(jsonData == "") {
-            Toast.makeText(this, "Failed to get crypto data. Check your Private Key.", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "Failed to get crypto data.")
+            Toast.makeText(this, "Put your valid private Key", Toast.LENGTH_LONG).show()
+            Log.d(TAG, "Failed to get crypto data. invalid private key in normal case.")
         }
 
         return CryptoParser()
